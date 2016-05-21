@@ -13,19 +13,37 @@ namespace moonstone.dbinit
 {
     public class Context
     {
+        /// <summary>
+        /// Holds the current SqlConnection.
+        /// </summary>
         protected SqlConnection CurrentConnection { get; set; }
 
+        /// <summary>
+        /// The connection string the the server
+        /// </summary>
         protected string ConnectionString { get; set; }
 
+        /// <summary>
+        /// The name of the database
+        /// </summary>
         protected string DatabaseName { get; set; }
 
 
+        /// <summary>
+        /// Initializes a new context
+        /// </summary>
+        /// <param name="connectionString">Connection String to the Server, without the database name</param>
+        /// <param name="dbName">The name of the database</param>
         public Context(string connectionString, string dbName)
         {
             this.ConnectionString = connectionString;
             this.DatabaseName = dbName;
         }
 
+        /// <summary>
+        /// Returns an open SqlConnection
+        /// </summary>
+        /// <returns></returns>
         public SqlConnection OpenConnection()
         {
             if (this.CurrentConnection == null || this.CurrentConnection.State == ConnectionState.Closed)
