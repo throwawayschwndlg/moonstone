@@ -7,11 +7,6 @@ using System.Threading.Tasks;
 
 namespace moonstone.dbinit
 {
-    public class DbInfo
-    {
-        public SqlConnection MyProperty { get; set; }
-    }
-
     public class Initializer
     {
     }
