@@ -13,6 +13,8 @@ namespace moonstone.dbinit
 {
     public class Context
     {
+        const string VERSION_TABLE = "db_version";
+
         /// <summary>
         /// Holds the current SqlConnection.
         /// </summary>
@@ -21,23 +23,29 @@ namespace moonstone.dbinit
         /// <summary>
         /// The connection string the the server
         /// </summary>
-        protected string ConnectionString { get; set; }
+        protected string ServerAddress { get; set; }
 
         /// <summary>
         /// The name of the database
         /// </summary>
         protected string DatabaseName { get; set; }
 
+        /// <summary>
+        /// Controls if integrated security should be used
+        /// </summary>
+        protected bool IntegratedSecurity { get; set; }
+
 
         /// <summary>
         /// Initializes a new context
         /// </summary>
-        /// <param name="connectionString">Connection String to the Server, without the database name</param>
-        /// <param name="dbName">The name of the database</param>
-        public Context(string connectionString, string dbName)
+        /// <param name="serverConnectionString">Connection String to the Server, without the database name</param>
+        /// <param name="databaseName">The name of the database</param>
+        public Context(string databaseName, string serverAddress, bool integratedSecurity)
         {
-            this.ConnectionString = connectionString;
-            this.DatabaseName = dbName;
+            this.DatabaseName = databaseName;
+            this.ServerAddress = serverAddress;
+            this.IntegratedSecurity = integratedSecurity;
         }
 
         /// <summary>
@@ -46,13 +54,13 @@ namespace moonstone.dbinit
         /// <returns></returns>
         public SqlConnection OpenConnection()
         {
-            if (this.CurrentConnection == null || this.CurrentConnection.State == ConnectionState.Closed)
+            if (this.CurrentConnection == null || this.CurrentConnection?.State == ConnectionState.Closed)
             {
                 try
                 {
                     this.CurrentConnection = new SqlConnection()
                     {
-                        ConnectionString = this.ConnectionString
+                        ConnectionString = this.ConnectionString()
                     };
                 }
                 catch (Exception e)
@@ -74,9 +82,9 @@ namespace moonstone.dbinit
         /// Returns the @@VERSION of the SQL Server
         /// </summary>
         /// <returns>Server Version, eg. Microsoft SQL Server 2014 - 12.0.2269.0 (X64)   Jun 10 2015 03:35:45   Copyright (c) Microsoft Corporation  Express Edition (64-bit) on Windows NT 6.3 <X64> (Build 10586: )</returns>
-        public string Version()
+        public string ServerVersion()
         {
-            var command = $"SELECT @@VERSION";
+            var command = this.BuildCommand($"SELECT @@VERSION", false);
 
             using (var connection = this.OpenConnection())
             {
@@ -101,7 +109,7 @@ namespace moonstone.dbinit
         {
             using (var connection = this.OpenConnection())
             {
-                var command = $"SELECT DB_ID('{this.DatabaseName}')";
+                var command = this.BuildCommand($"SELECT DB_ID('{this.DatabaseName}')", false);
                 var result = connection.Query<int?>(command).SingleOrDefault();
                 return result.HasValue;
             }
@@ -112,14 +120,14 @@ namespace moonstone.dbinit
         /// </summary>
         public void Drop()
         {
-            var command = $"DROP DATABASE {this.DatabaseName}";
+            var command = this.BuildCommand($"DROP DATABASE {this.DatabaseName}", false);
             using (var connection = this.OpenConnection())
             {
                 try
                 {
                     connection.Query(command);
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     throw new DropDatabaseException(
                         $"Failed to drop database", e);
@@ -128,11 +136,90 @@ namespace moonstone.dbinit
         }
 
         /// <summary>
+        /// Adds the 'USE XYZ;' part to the command.
+        /// </summary>
+        /// <param name="command">The command without the 'USE XYZ' part</param>
+        /// <param name="useSpecifiedDatabase">If true, the DatabaseName will be used, otherwise 'master'</param>
+        /// <returns></returns>
+        public string BuildCommand(string command, bool useSpecifiedDatabase)
+        {
+            string dbToUse = useSpecifiedDatabase ? this.DatabaseName : "master";
+
+            return $"USE {dbToUse}; {command}";
+        }
+
+        /// <summary>
+        /// Attempts to create the version table.
+        /// </summary>
+        public void CreateVersionTable()
+        {
+            if(this.VersionTableExists())
+            {
+                throw new VersionTableAlreadyExistsException(
+                    $"The version table '{VERSION_TABLE}' already exists in the database.");
+            }
+
+            var command = this.BuildCommand(
+                $@"CREATE TABLE {VERSION_TABLE} (
+                        major INT NOT NULL,
+                        minor INT NOT NULL,
+                        revision INT NOT NULL,
+                        install_date DATETIME2 NOT NULL,
+                        PRIMARY KEY (major, minor, revision)
+                    );", true);
+
+            try
+            {
+                using (var connection = this.OpenConnection())
+                {
+                    using (var transaction = connection.BeginTransaction())
+                    {
+                        try
+                        {
+                            connection.Execute(sql: command, transaction: transaction);
+                            transaction.Commit();
+                        }
+                        catch
+                        {
+                            transaction.Rollback();
+                            throw;
+                        }
+                    }
+                }
+            }
+            catch(Exception e)
+            {
+                throw new CreateVersionTableException(
+                    $"Failed to create version table '{VERSION_TABLE}'.", e);
+            }
+        }
+
+        /// <summary>
+        /// Checks if the version table exists
+        /// </summary>
+        /// <returns>True if exists, otherwise false</returns>
+        public bool VersionTableExists()
+        {
+            var command = this.BuildCommand(
+                $"SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '{VERSION_TABLE}';",
+                true);
+
+            using (var connection = this.OpenConnection())
+            {
+                var result = connection.Query<int>(command).Single();
+
+                return result == 1;
+            }
+        }
+
+        /// <summary>
         /// Creates the database
         /// </summary>
         public void Create()
         {
-            var command = $"CREATE DATABASE {this.DatabaseName}";
+            var command = this.BuildCommand(
+                $"CREATE DATABASE {this.DatabaseName}",
+                false);
             using (var connection = this.OpenConnection())
             {
                 try
@@ -145,6 +232,20 @@ namespace moonstone.dbinit
                         $"Failed to create database", e);
                 }
             }
+        }
+
+        /// <summary>
+        /// Returns the connection string used to connect to the database
+        /// </summary>
+        /// <returns></returns>
+        public string ConnectionString()
+        {
+            var connectionString = new SqlConnectionStringBuilder();
+            connectionString.DataSource = this.ServerAddress;
+            connectionString.IntegratedSecurity = this.IntegratedSecurity;
+
+            var c = connectionString.ToString();
+            return connectionString.ToString();
         }
     }
 }

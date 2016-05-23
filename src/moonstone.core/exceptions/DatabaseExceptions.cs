@@ -53,4 +53,28 @@ namespace moonstone.core.exceptions
           System.Runtime.Serialization.SerializationInfo info,
           System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
     }
+
+
+    [Serializable]
+    public class CreateVersionTableException : Exception
+    {
+        public CreateVersionTableException() { }
+        public CreateVersionTableException(string message) : base(message) { }
+        public CreateVersionTableException(string message, Exception inner) : base(message, inner) { }
+        protected CreateVersionTableException(
+          System.Runtime.Serialization.SerializationInfo info,
+          System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
+    }
+
+
+    [Serializable]
+    public class VersionTableAlreadyExistsException : Exception
+    {
+        public VersionTableAlreadyExistsException() { }
+        public VersionTableAlreadyExistsException(string message) : base(message) { }
+        public VersionTableAlreadyExistsException(string message, Exception inner) : base(message, inner) { }
+        protected VersionTableAlreadyExistsException(
+          System.Runtime.Serialization.SerializationInfo info,
+          System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
+    }
 }

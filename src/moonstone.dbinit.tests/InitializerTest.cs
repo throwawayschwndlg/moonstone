@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace moonstone.dbinit.tests
 {
     [TestFixture]
-    public class InitializerTests
+    public class InitializerTest
     {
         [Test]
         public void TestMethod()
