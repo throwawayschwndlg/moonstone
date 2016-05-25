@@ -1,32 +1,37 @@
-﻿using moonstone.core.exceptions;
+﻿using FluentAssertions;
+using moonstone.core.exceptions;
 using NUnit.Framework;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace moonstone.dbinit.tests
 {
     [TestFixture]
     public class ContextTest
     {
-        const string SERVER_ADDRESS = ".";
-        const bool INTEGRATED_SECURITY = true;
-        const string SERVER_CONNECTION_STRING = "Data Source=.;Integrated Security=True;";
+        private const string SERVER_ADDRESS = ".";
+        private const bool INTEGRATED_SECURITY = true;
+        private const string SERVER_CONNECTION_STRING = "Data Source=.;Integrated Security=True;";
 
-        const string DATABASE_NAME = "moonstone_tests";
+        private const string DATABASE_NAME = "moonstone_tests";
 
-        public Context GetValidContext()
+        public static Context GetValidContext()
         {
             return new Context(DATABASE_NAME, SERVER_ADDRESS, INTEGRATED_SECURITY);
+        }
+
+        public static Context GetInitializedContext()
+        {
+            var context = GetValidContext();
+            context.Init();
+
+            return context;
         }
 
         [SetUp]
         public void Setup()
         {
-            var context = this.GetValidContext();
-            if(context.Exists())
+            var context = GetValidContext();
+            if (context.Exists())
             {
                 context.Drop();
             }
@@ -36,7 +41,7 @@ namespace moonstone.dbinit.tests
         [TearDown]
         public void Teardown()
         {
-            var context = this.GetValidContext();
+            var context = GetValidContext();
             if (context.Exists())
             {
                 context.Drop();
@@ -46,7 +51,7 @@ namespace moonstone.dbinit.tests
         [Test]
         public void Can_Open_Valid_Connection()
         {
-            var context = this.GetValidContext();
+            var context = GetValidContext();
 
             var connection = context.OpenConnection();
 
@@ -56,7 +61,7 @@ namespace moonstone.dbinit.tests
         [Test]
         public void Can_Read_Server_Version()
         {
-            var context = this.GetValidContext();
+            var context = GetValidContext();
 
             string version = context.ServerVersion();
 
@@ -66,7 +71,7 @@ namespace moonstone.dbinit.tests
         [Test]
         public void Can_Find_DB()
         {
-            var context = this.GetValidContext();
+            var context = GetValidContext();
 
             Assert.IsTrue(context.Exists());
         }
@@ -74,14 +79,14 @@ namespace moonstone.dbinit.tests
         [Test]
         public void Can_Run_Multiple_Queries()
         {
-            var context = this.GetValidContext();
+            var context = GetValidContext();
 
             try
             {
                 context.Exists();
                 context.ServerVersion();
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Assert.Fail(e.ToString());
             }
@@ -90,8 +95,8 @@ namespace moonstone.dbinit.tests
         [Test]
         public void Cannot_Find_DB()
         {
-            var context = this.GetValidContext();
-            if(context.Exists())
+            var context = GetValidContext();
+            if (context.Exists())
             {
                 context.Drop();
             }
@@ -102,13 +107,13 @@ namespace moonstone.dbinit.tests
         [Test]
         public void Can_Drop_DB()
         {
-            var context = this.GetValidContext();
+            var context = GetValidContext();
             try
             {
                 context.Drop();
                 Assert.IsFalse(context.Exists());
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Assert.Fail(e.ToString());
             }
@@ -117,8 +122,8 @@ namespace moonstone.dbinit.tests
         [Test]
         public void Can_Create_DB()
         {
-            var context = this.GetValidContext();
-            if(context.Exists())
+            var context = GetValidContext();
+            if (context.Exists())
             {
                 context.Drop();
             }
@@ -128,7 +133,7 @@ namespace moonstone.dbinit.tests
                 context.Create();
                 Assert.IsTrue(context.Exists());
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Assert.Fail(e.ToString());
             }
@@ -137,7 +142,7 @@ namespace moonstone.dbinit.tests
         [Test]
         public void Returns_False_If_Version_Table_Does_Not_Exist()
         {
-            var context = this.GetValidContext();
+            var context = GetValidContext();
 
             bool exists = context.VersionTableExists();
 
@@ -145,9 +150,23 @@ namespace moonstone.dbinit.tests
         }
 
         [Test]
+        public void Returns_False_If_Database_Does_Not_Exist()
+        {
+            var context = GetValidContext();
+            if (context.Exists())
+            {
+                context.Drop();
+            }
+
+            Assert.IsFalse(context.Exists());
+
+            Assert.IsFalse(context.VersionTableExists());
+        }
+
+        [Test]
         public void Can_Create_Version_Table()
         {
-            var context = this.GetValidContext();
+            var context = GetValidContext();
 
             context.CreateVersionTable();
             bool exists = context.VersionTableExists();
@@ -158,7 +177,7 @@ namespace moonstone.dbinit.tests
         [Test]
         public void Returns_True_If_Version_Table_Exists()
         {
-            var context = this.GetValidContext();
+            var context = GetValidContext();
             context.CreateVersionTable();
 
             bool exists = context.VersionTableExists();
@@ -169,7 +188,7 @@ namespace moonstone.dbinit.tests
         [Test]
         public void Can_Build_Command_Master()
         {
-            var context = this.GetValidContext();
+            var context = GetValidContext();
             string command = "SELECT 42";
             string expected = $"USE master; {command}";
 
@@ -181,13 +200,377 @@ namespace moonstone.dbinit.tests
         [Test]
         public void Can_Build_Command_Specific()
         {
-            var context = this.GetValidContext();
+            var context = GetValidContext();
             string command = "SELECT 42";
             var expected = $"USE {DATABASE_NAME}; {command}";
 
             string result = context.BuildCommand(command, true);
 
             Assert.AreEqual(expected, result);
+        }
+
+        [Test]
+        public void Returns_Null_If_No_Version_Installed()
+        {
+            var context = GetValidContext();
+            Version version = null;
+
+            version = context.GetInstalledVersion();
+
+            Assert.IsNull(version);
+        }
+
+        [Test]
+        public void Can_Get_Latest_Version()
+        {
+            var context = GetInitializedContext();
+            var ver1 = new InstalledVersion(1, 0, 0, DateTime.Now);
+            var ver2 = new InstalledVersion(1, 2, 3, DateTime.Now);
+            var ver3 = new InstalledVersion(2, 0, 0, DateTime.Now);
+
+            context.AddInstalledVersion(ver1);
+            context.AddInstalledVersion(ver2);
+            context.AddInstalledVersion(ver3);
+
+            var installed = context.GetInstalledVersion();
+
+            installed.ShouldBeEquivalentTo(ver3, options =>
+                options.Using<DateTime>(x => x.Subject.Should().BeCloseTo(ver3.InstallDateUtc)).WhenTypeIs<DateTime>());
+        }
+
+        [Test]
+        public void Init_Creates_Database()
+        {
+            var context = GetValidContext();
+            if (context.Exists())
+            {
+                context.Drop();
+            }
+
+            Assert.IsFalse(context.Exists());
+
+            context.Init();
+
+            Assert.IsTrue(context.Exists());
+        }
+
+        [Test]
+        public void Init_Creates_Version_Table()
+        {
+            var context = GetValidContext();
+            if (context.Exists())
+            {
+                context.Drop();
+            }
+
+            Assert.IsFalse(context.VersionTableExists());
+
+            context.Init();
+
+            Assert.IsTrue(context.VersionTableExists());
+        }
+
+        [Test]
+        public void Can_Add_Version()
+        {
+            var context = GetInitializedContext();
+            var toAdd = new InstalledVersion(1, 2, 3, DateTime.UtcNow);
+
+            context.AddInstalledVersion(toAdd);
+
+            var installed = context.GetInstalledVersion();
+
+            installed.ShouldBeEquivalentTo(toAdd, options =>
+                options.Using<DateTime>(x => x.Subject.Should().BeCloseTo(toAdd.InstallDateUtc)).WhenTypeIs<DateTime>());
+        }
+
+        [Test]
+        public void Can_Not_Add_Lower_Version()
+        {
+            var context = GetInitializedContext();
+            var ver1 = new InstalledVersion(2, 0, 0, DateTime.UtcNow);
+            var ver2 = new InstalledVersion(1, 9, 9, DateTime.UtcNow);
+            context.AddInstalledVersion(ver1);
+
+            Assert.Throws<LowerOrEqualVersionException>(() => context.AddInstalledVersion(ver2));
+        }
+
+        [Test]
+        public void Can_Find_Specified_Table()
+        {
+            var context = GetInitializedContext();
+
+            bool exists = context.TableExists(context.VersionTableName(), true);
+
+            Assert.IsTrue(exists);
+        }
+
+        [Test]
+        public void Can_Not_Find_Specified_Table()
+        {
+            var context = GetInitializedContext();
+
+            bool exists = context.TableExists("somenonexistenttable", true);
+
+            Assert.IsFalse(exists);
+        }
+
+        [Test]
+        public void Can_Find_Unspecified_Table()
+        {
+            var context = GetInitializedContext();
+
+            bool exists = context.TableExists("spt_monitor", false);
+
+            Assert.IsTrue(exists);
+        }
+
+        [Test]
+        public void Can_Not_Find_Unspecified_Table()
+        {
+            var context = GetInitializedContext();
+
+            bool exists = context.TableExists("something", false);
+
+            Assert.IsFalse(exists);
+        }
+
+        [Test]
+        public void Can_Drop_Table_On_Specified()
+        {
+            var context = GetInitializedContext();
+
+            bool existsBeforeDrop;
+            bool existsAfterDrop;
+
+            existsBeforeDrop = context.VersionTableExists();
+            context.DropTable(context.VersionTableName(), useSpecifiedDatabase: true);
+            existsAfterDrop = context.VersionTableExists();
+
+            Assert.IsTrue(existsBeforeDrop);
+            Assert.IsFalse(existsAfterDrop);
+        }
+
+        [Test]
+        public void Can_Drop_Table_On_Unspecified()
+        {
+            string tableName = "hurr";
+            var context = GetInitializedContext();
+
+            bool existsBeforeDrop;
+            bool existsAfterDrop;
+
+            var createTableScript = new Script("hurr_create",
+                $@"CREATE TABLE {tableName} (
+                    id INT NOT NULL,
+                    [name] NVARCHAR(128) NOT NULL,
+                    PRIMARY KEY(id)
+                );",
+                new Version(1, 1, 1),
+                useSpecifiedDatabase: false,
+                useTransaction: false);
+
+            if (!context.TableExists(tableName, useSpecifiedDatabase: false))
+            {
+                context.ExecuteScript(createTableScript);
+            }
+
+            existsBeforeDrop = context.TableExists(tableName, useSpecifiedDatabase: false);
+            context.DropTable(tableName, useSpecifiedDatabase: false);
+            existsAfterDrop = context.TableExists(tableName, useSpecifiedDatabase: false);
+
+            Assert.IsTrue(existsBeforeDrop);
+            Assert.IsFalse(existsAfterDrop);
+        }
+
+        [Test]
+        public void Can_Execute_On_Specified()
+        {
+            var context = ContextTest.GetInitializedContext();
+
+            bool tableExistsBeforeExecution;
+            bool tableExistsAfterExecution;
+
+            string tableName = "TEST";
+
+            var script = new Script("ttt",
+                $@"CREATE TABLE {tableName} (
+                        id int not null,
+                        [name] nvarchar(128) not null
+                        PRIMARY KEY(id)
+                    );
+
+                    INSERT INTO {tableName} (id, [name]) values (1, 'test');",
+                new Version(1, 0, 0),
+                useSpecifiedDatabase: true,
+                useTransaction: false);
+
+            tableExistsBeforeExecution = context.TableExists(tableName, useSpecifiedDatabase: true);
+            context.ExecuteScript(script);
+            tableExistsAfterExecution = context.TableExists(tableName, useSpecifiedDatabase: true);
+
+            Assert.IsFalse(tableExistsBeforeExecution);
+            Assert.IsTrue(tableExistsAfterExecution);
+        }
+
+        [Test]
+        public void Can_Execute_On_Unspecified()
+        {
+            var context = GetInitializedContext();
+
+            bool tableExistsBeforeExecution;
+            bool tableExistsAfterExecution;
+
+            string tableName = "test";
+
+            var script = new Script("ttt",
+                $@"CREATE TABLE {tableName} (
+                        id int not null,
+                        [name] nvarchar(128) not null
+                        PRIMARY KEY(id)
+                    );
+
+                INSERT INTO {tableName} (id, [name]) values (1, 'test');",
+                new Version(1, 0, 0),
+                useSpecifiedDatabase: false,
+                useTransaction: false);
+
+            if (context.TableExists(tableName, useSpecifiedDatabase: false))
+            {
+                context.DropTable(tableName, useSpecifiedDatabase: false);
+            }
+
+            tableExistsBeforeExecution = context.TableExists(tableName, useSpecifiedDatabase: false);
+            context.ExecuteScript(script);
+            tableExistsAfterExecution = context.TableExists(tableName, useSpecifiedDatabase: false);
+            context.DropTable(tableName, useSpecifiedDatabase: false);
+
+            Assert.IsFalse(tableExistsBeforeExecution);
+            Assert.IsTrue(tableExistsAfterExecution);
+        }
+
+        [Test]
+        public void Can_Execute_With_Transaction()
+        {
+            string tableName = "animals";
+            bool tableExistsBeforeExecution = false;
+            bool tableExistsAfterExecution = false;
+            var context = GetInitializedContext();
+            var script = new Script(
+                "animals",
+                $@"CREATE TABLE {tableName}(
+                    id int not null,
+                    [name] nvarchar(128) not null,
+                    PRIMARY KEY (id)
+                );
+
+                INSERT INTO {tableName} (id, [name]) VALUES(1, 'dog');",
+                version: new Version(1, 0, 0),
+                useSpecifiedDatabase: true,
+                useTransaction: true);
+
+            tableExistsBeforeExecution = context.TableExists(tableName, true);
+            context.ExecuteScript(script);
+            tableExistsAfterExecution = context.TableExists(tableName, true);
+
+            Assert.IsFalse(tableExistsBeforeExecution);
+            Assert.IsTrue(tableExistsAfterExecution);
+        }
+
+        [Test]
+        public void Can_Execute_Without_Transaction()
+        {
+            string tableName = "animals";
+            bool tableExistsBeforeExecution = false;
+            bool tableExistsAfterExecution = false;
+            var context = GetInitializedContext();
+            var script = new Script(
+                "animals",
+                $@"CREATE TABLE {tableName}(
+                    id int not null,
+                    [name] nvarchar(128) not null,
+                    PRIMARY KEY (id)
+                );
+
+                INSERT INTO {tableName} (id, [name]) VALUES(1, 'dog');",
+                version: new Version(1, 0, 0),
+                useSpecifiedDatabase: true,
+                useTransaction: false);
+
+            tableExistsBeforeExecution = context.TableExists(tableName, true);
+            context.ExecuteScript(script);
+            tableExistsAfterExecution = context.TableExists(tableName, true);
+
+            Assert.IsFalse(tableExistsBeforeExecution);
+            Assert.IsTrue(tableExistsAfterExecution);
+        }
+
+        [Test]
+        public void Cannot_Execute_Multiple_With_Same_Version()
+        {
+            var context = GetInitializedContext();
+
+            var script1 = new Script("script_1",
+                $@"SELECT 1;",
+                new Version(1, 0, 0),
+                useSpecifiedDatabase: true,
+                useTransaction: false);
+
+            var script2 = new Script("script_2",
+                $@"SELECT 2;",
+                new Version(1, 0, 0),
+                useSpecifiedDatabase: true,
+                useTransaction: false);
+
+            context.ExecuteScript(script1);
+            Assert.Throws<LowerOrEqualVersionException>(() => context.ExecuteScript(script2));
+        }
+
+        [Test]
+        public void Can_Return_Version_Table_Name()
+        {
+            var context = GetInitializedContext();
+            var versionTableName = context.VersionTableName();
+
+            Assert.AreEqual("db_version", versionTableName);
+        }
+
+        [Test]
+        public void Can_Add_Installed_Version_Without_Transaction()
+        {
+            var context = GetInitializedContext();
+            var versionToInstall = new Version(1, 2, 3);
+            var script = new Script(
+                "add_version",
+                "select 42;",
+                versionToInstall,
+                useSpecifiedDatabase: true,
+                useTransaction: false);
+
+            context.ExecuteScript(script);
+
+            var installedVersion = context.GetInstalledVersion().GetVersion();
+
+            installedVersion.ShouldBeEquivalentTo(versionToInstall);
+        }
+
+        [Test]
+        public void Can_Add_Installed_Version_With_Transaction()
+        {
+            var context = GetInitializedContext();
+            var versionToInstall = new Version(1, 2, 3);
+            var script = new Script(
+                "add_version",
+                "select 42;",
+                versionToInstall,
+                useSpecifiedDatabase: true,
+                useTransaction: true);
+
+            context.ExecuteScript(script);
+
+            var installedVersion = context.GetInstalledVersion().GetVersion();
+
+            installedVersion.ShouldBeEquivalentTo(versionToInstall);
         }
     }
 }

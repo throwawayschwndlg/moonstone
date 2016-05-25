@@ -1,10 +1,5 @@
 ﻿using NUnit.Framework;
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace moonstone.dbinit.tests
 {
@@ -21,7 +16,7 @@ namespace moonstone.dbinit.tests
             File.WriteAllText(path, command);
             dbinit.Script script = null;
 
-            script = dbinit.Script.FromFile(path, version);
+            script = dbinit.Script.FromFile("test", path, version, useSpecifiedDatabase: true, useTransaction: false);
 
             Assert.AreEqual(command, script.Command);
             Assert.AreEqual(version, script.Version);

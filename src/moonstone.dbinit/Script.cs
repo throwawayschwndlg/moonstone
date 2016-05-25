@@ -1,26 +1,31 @@
 ﻿using moonstone.core.exceptions;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace moonstone.dbinit
 {
     public class Script
     {
+        public string Name { get; set; }
+
         public string Command { get; set; }
 
         public Version Version { get; set; }
 
-        public Script(string command, Version version)
+        public bool UseTransaction { get; set; }
+
+        public bool UseSpecifiedDatabase { get; set; }
+
+        public Script(string name, string command, Version version, bool useSpecifiedDatabase, bool useTransaction)
         {
+            this.Name = name;
             this.Command = command;
             this.Version = version;
+            this.UseSpecifiedDatabase = useSpecifiedDatabase;
+            this.UseTransaction = useTransaction;
         }
 
-        public static Script FromFile(string path, Version version)
+        public static Script FromFile(string name, string path, Version version, bool useSpecifiedDatabase, bool useTransaction)
         {
             string content = null;
 
@@ -28,13 +33,13 @@ namespace moonstone.dbinit
             {
                 content = File.ReadAllText(path);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 throw new ReadFileException(
                     $"Failed to read contents from {path}", e);
             }
 
-            return new Script(content, version);
+            return new Script(name, content, version, useSpecifiedDatabase, useTransaction);
         }
     }
 }
