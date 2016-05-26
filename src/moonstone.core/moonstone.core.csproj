@@ -42,6 +42,7 @@
   <ItemGroup>
     <Compile Include="exceptions\DatabaseExceptions.cs" />
     <Compile Include="exceptions\IOExceptions.cs" />
+    <Compile Include="models\User.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup />
