@@ -40,10 +40,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="data\IUnitOfWork.cs" />
     <Compile Include="exceptions\DatabaseExceptions.cs" />
     <Compile Include="exceptions\IOExceptions.cs" />
     <Compile Include="models\User.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="repositories\IUserRepository.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

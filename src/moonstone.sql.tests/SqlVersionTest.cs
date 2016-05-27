@@ -1,15 +1,11 @@
 ﻿using FluentAssertions;
 using NUnit.Framework;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace moonstone.dbinit.tests
+namespace moonstone.sql.tests
 {
     [TestFixture]
-    public class VersionTest
+    public class SqlVersionTest
     {
         [Test]
         public void Can_Compare()

@@ -261,4 +261,44 @@ namespace moonstone.core.exceptions
           System.Runtime.Serialization.SerializationInfo info,
           System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
     }
+
+    [Serializable]
+    public class NoActiveTransactionException : Exception
+    {
+        public NoActiveTransactionException()
+        {
+        }
+
+        public NoActiveTransactionException(string message) : base(message)
+        {
+        }
+
+        public NoActiveTransactionException(string message, Exception inner) : base(message, inner)
+        {
+        }
+
+        protected NoActiveTransactionException(
+          System.Runtime.Serialization.SerializationInfo info,
+          System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
+    }
+
+    [Serializable]
+    public class RunQueryException : Exception
+    {
+        public RunQueryException()
+        {
+        }
+
+        public RunQueryException(string message) : base(message)
+        {
+        }
+
+        public RunQueryException(string message, Exception inner) : base(message, inner)
+        {
+        }
+
+        protected RunQueryException(
+          System.Runtime.Serialization.SerializationInfo info,
+          System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
+    }
 }

@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace moonstone.dbinit
+namespace moonstone.sql.context
 {
-    public class Version : IComparable<Version>
+    public class SqlVersion : IComparable<SqlVersion>
     {
         public int Major { get; set; }
 
@@ -14,21 +10,21 @@ namespace moonstone.dbinit
 
         public int Revision { get; set; }
 
-        public Version()
+        public SqlVersion()
         {
             this.Major = 0;
             this.Minor = 0;
             this.Revision = 0;
         }
 
-        public Version(int major, int minor, int revision)
+        public SqlVersion(int major, int minor, int revision)
         {
             this.Major = major;
             this.Minor = minor;
             this.Revision = revision;
         }
 
-        public int CompareTo(Version other)
+        public int CompareTo(SqlVersion other)
         {
             if (this.Major > other.Major)
             {

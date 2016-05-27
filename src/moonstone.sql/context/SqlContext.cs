@@ -5,9 +5,9 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 
-namespace moonstone.dbinit
+namespace moonstone.sql.context
 {
-    public class Context
+    public class SqlContext
     {
         private const string VERSION_TABLE = "db_version";
 
@@ -16,7 +16,7 @@ namespace moonstone.dbinit
         /// </summary>
         /// <param name="serverConnectionString">Connection String to the Server, without the database name</param>
         /// <param name="databaseName">The name of the database</param>
-        public Context(string databaseName, string serverAddress, bool integratedSecurity)
+        public SqlContext(string databaseName, string serverAddress, bool integratedSecurity)
         {
             this.DatabaseName = databaseName;
             this.ServerAddress = serverAddress;
@@ -47,7 +47,7 @@ namespace moonstone.dbinit
         /// Adds a record to the version table
         /// </summary>
         /// <param name="version">InstalledVersion to add</param>
-        public void AddInstalledVersion(InstalledVersion version)
+        public void AddInstalledVersion(SqlInstalledVersion version)
         {
             this.CheckVersion(version);
 
@@ -202,9 +202,9 @@ namespace moonstone.dbinit
         /// Executes the specified script on the database. If successfull, the installed version will be added
         /// </summary>
         /// <param name="script"></param>
-        public void ExecuteScript(Script script)
+        public void ExecuteScript(SqlScript script)
         {
-            var version = new InstalledVersion(
+            var version = new SqlInstalledVersion(
                 script.Version.Major,
                 script.Version.Minor,
                 script.Version.Revision,
@@ -272,7 +272,7 @@ namespace moonstone.dbinit
         /// Returns the currently installed version
         /// </summary>
         /// <returns></returns>
-        public InstalledVersion GetInstalledVersion()
+        public SqlInstalledVersion GetInstalledVersion()
         {
             if (this.VersionTableExists())
             {
@@ -283,7 +283,7 @@ namespace moonstone.dbinit
                 {
                     try
                     {
-                        var result = connection.Query<InstalledVersion>(command).SingleOrDefault();
+                        var result = connection.Query<SqlInstalledVersion>(command).SingleOrDefault();
 
                         return result;
                     }
@@ -426,7 +426,7 @@ namespace moonstone.dbinit
         /// equal or higher version was found.
         /// </summary>
         /// <param name="installedVersionToCheck"></param>
-        protected void CheckVersion(InstalledVersion installedVersionToCheck)
+        protected void CheckVersion(SqlInstalledVersion installedVersionToCheck)
         {
             var currentInstalledVersion = this.GetInstalledVersion();
             if (currentInstalledVersion != null)
@@ -477,6 +477,14 @@ namespace moonstone.dbinit
         public string VersionTableName()
         {
             return VERSION_TABLE;
+        }
+
+        public void BeginTransaction()
+        {
+        }
+
+        public void CommitTransaction()
+        {
         }
     }
 }

@@ -1,22 +1,23 @@
-﻿using NUnit.Framework;
+﻿using moonstone.sql.context;
+using NUnit.Framework;
 using System.IO;
 
-namespace moonstone.dbinit.tests
+namespace moonstone.sql.tests
 {
     [TestFixture]
-    public class ScriptTest
+    public class SqlScriptTest
     {
         [Test]
         public void Can_Init_From_File()
         {
             var path = "test_init_from_file.sql";
             var command = "SELECT 42";
-            var version = new Version(1, 0, 0);
+            var version = new SqlVersion(1, 0, 0);
 
             File.WriteAllText(path, command);
-            dbinit.Script script = null;
+            SqlScript script = null;
 
-            script = dbinit.Script.FromFile("test", path, version, useSpecifiedDatabase: true, useTransaction: false);
+            script = SqlScript.FromFile("test", path, version, useSpecifiedDatabase: true, useTransaction: false);
 
             Assert.AreEqual(command, script.Command);
             Assert.AreEqual(version, script.Version);

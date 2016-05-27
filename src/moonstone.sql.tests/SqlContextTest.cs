@@ -1,12 +1,13 @@
 ﻿using FluentAssertions;
 using moonstone.core.exceptions;
+using moonstone.sql.context;
 using NUnit.Framework;
 using System;
 
-namespace moonstone.dbinit.tests
+namespace moonstone.sql.tests
 {
     [TestFixture]
-    public class ContextTest
+    public class SqlContextTest
     {
         private const string SERVER_ADDRESS = ".";
         private const bool INTEGRATED_SECURITY = true;
@@ -14,12 +15,12 @@ namespace moonstone.dbinit.tests
 
         private const string DATABASE_NAME = "moonstone_tests";
 
-        public static Context GetValidContext()
+        public static SqlContext GetValidContext()
         {
-            return new Context(DATABASE_NAME, SERVER_ADDRESS, INTEGRATED_SECURITY);
+            return new SqlContext(DATABASE_NAME, SERVER_ADDRESS, INTEGRATED_SECURITY);
         }
 
-        public static Context GetInitializedContext()
+        public static SqlContext GetInitializedContext()
         {
             var context = GetValidContext();
             context.Init();
@@ -213,7 +214,7 @@ namespace moonstone.dbinit.tests
         public void Returns_Null_If_No_Version_Installed()
         {
             var context = GetValidContext();
-            Version version = null;
+            context.SqlVersion version = null;
 
             version = context.GetInstalledVersion();
 
@@ -224,9 +225,9 @@ namespace moonstone.dbinit.tests
         public void Can_Get_Latest_Version()
         {
             var context = GetInitializedContext();
-            var ver1 = new InstalledVersion(1, 0, 0, DateTime.Now);
-            var ver2 = new InstalledVersion(1, 2, 3, DateTime.Now);
-            var ver3 = new InstalledVersion(2, 0, 0, DateTime.Now);
+            var ver1 = new SqlInstalledVersion(1, 0, 0, DateTime.Now);
+            var ver2 = new SqlInstalledVersion(1, 2, 3, DateTime.Now);
+            var ver3 = new SqlInstalledVersion(2, 0, 0, DateTime.Now);
 
             context.AddInstalledVersion(ver1);
             context.AddInstalledVersion(ver2);
@@ -274,7 +275,7 @@ namespace moonstone.dbinit.tests
         public void Can_Add_Version()
         {
             var context = GetInitializedContext();
-            var toAdd = new InstalledVersion(1, 2, 3, DateTime.UtcNow);
+            var toAdd = new SqlInstalledVersion(1, 2, 3, DateTime.UtcNow);
 
             context.AddInstalledVersion(toAdd);
 
@@ -288,8 +289,8 @@ namespace moonstone.dbinit.tests
         public void Can_Not_Add_Lower_Version()
         {
             var context = GetInitializedContext();
-            var ver1 = new InstalledVersion(2, 0, 0, DateTime.UtcNow);
-            var ver2 = new InstalledVersion(1, 9, 9, DateTime.UtcNow);
+            var ver1 = new SqlInstalledVersion(2, 0, 0, DateTime.UtcNow);
+            var ver2 = new SqlInstalledVersion(1, 9, 9, DateTime.UtcNow);
             context.AddInstalledVersion(ver1);
 
             Assert.Throws<LowerOrEqualVersionException>(() => context.AddInstalledVersion(ver2));
@@ -360,13 +361,13 @@ namespace moonstone.dbinit.tests
             bool existsBeforeDrop;
             bool existsAfterDrop;
 
-            var createTableScript = new Script("hurr_create",
+            var createTableScript = new SqlScript("hurr_create",
                 $@"CREATE TABLE {tableName} (
                     id INT NOT NULL,
                     [name] NVARCHAR(128) NOT NULL,
                     PRIMARY KEY(id)
                 );",
-                new Version(1, 1, 1),
+                new context.SqlVersion(1, 1, 1),
                 useSpecifiedDatabase: false,
                 useTransaction: false);
 
@@ -386,14 +387,14 @@ namespace moonstone.dbinit.tests
         [Test]
         public void Can_Execute_On_Specified()
         {
-            var context = ContextTest.GetInitializedContext();
+            var context = SqlContextTest.GetInitializedContext();
 
             bool tableExistsBeforeExecution;
             bool tableExistsAfterExecution;
 
             string tableName = "TEST";
 
-            var script = new Script("ttt",
+            var script = new SqlScript("ttt",
                 $@"CREATE TABLE {tableName} (
                         id int not null,
                         [name] nvarchar(128) not null
@@ -401,7 +402,7 @@ namespace moonstone.dbinit.tests
                     );
 
                     INSERT INTO {tableName} (id, [name]) values (1, 'test');",
-                new Version(1, 0, 0),
+                new context.SqlVersion(1, 0, 0),
                 useSpecifiedDatabase: true,
                 useTransaction: false);
 
@@ -423,7 +424,7 @@ namespace moonstone.dbinit.tests
 
             string tableName = "test";
 
-            var script = new Script("ttt",
+            var script = new SqlScript("ttt",
                 $@"CREATE TABLE {tableName} (
                         id int not null,
                         [name] nvarchar(128) not null
@@ -431,7 +432,7 @@ namespace moonstone.dbinit.tests
                     );
 
                 INSERT INTO {tableName} (id, [name]) values (1, 'test');",
-                new Version(1, 0, 0),
+                new context.SqlVersion(1, 0, 0),
                 useSpecifiedDatabase: false,
                 useTransaction: false);
 
@@ -456,7 +457,7 @@ namespace moonstone.dbinit.tests
             bool tableExistsBeforeExecution = false;
             bool tableExistsAfterExecution = false;
             var context = GetInitializedContext();
-            var script = new Script(
+            var script = new SqlScript(
                 "animals",
                 $@"CREATE TABLE {tableName}(
                     id int not null,
@@ -465,7 +466,7 @@ namespace moonstone.dbinit.tests
                 );
 
                 INSERT INTO {tableName} (id, [name]) VALUES(1, 'dog');",
-                version: new Version(1, 0, 0),
+                version: new context.SqlVersion(1, 0, 0),
                 useSpecifiedDatabase: true,
                 useTransaction: true);
 
@@ -484,7 +485,7 @@ namespace moonstone.dbinit.tests
             bool tableExistsBeforeExecution = false;
             bool tableExistsAfterExecution = false;
             var context = GetInitializedContext();
-            var script = new Script(
+            var script = new SqlScript(
                 "animals",
                 $@"CREATE TABLE {tableName}(
                     id int not null,
@@ -493,7 +494,7 @@ namespace moonstone.dbinit.tests
                 );
 
                 INSERT INTO {tableName} (id, [name]) VALUES(1, 'dog');",
-                version: new Version(1, 0, 0),
+                version: new context.SqlVersion(1, 0, 0),
                 useSpecifiedDatabase: true,
                 useTransaction: false);
 
@@ -510,15 +511,15 @@ namespace moonstone.dbinit.tests
         {
             var context = GetInitializedContext();
 
-            var script1 = new Script("script_1",
+            var script1 = new SqlScript("script_1",
                 $@"SELECT 1;",
-                new Version(1, 0, 0),
+                new context.SqlVersion(1, 0, 0),
                 useSpecifiedDatabase: true,
                 useTransaction: false);
 
-            var script2 = new Script("script_2",
+            var script2 = new SqlScript("script_2",
                 $@"SELECT 2;",
-                new Version(1, 0, 0),
+                new context.SqlVersion(1, 0, 0),
                 useSpecifiedDatabase: true,
                 useTransaction: false);
 
@@ -539,8 +540,8 @@ namespace moonstone.dbinit.tests
         public void Can_Add_Installed_Version_Without_Transaction()
         {
             var context = GetInitializedContext();
-            var versionToInstall = new Version(1, 2, 3);
-            var script = new Script(
+            var versionToInstall = new context.SqlVersion(1, 2, 3);
+            var script = new SqlScript(
                 "add_version",
                 "select 42;",
                 versionToInstall,
@@ -558,8 +559,8 @@ namespace moonstone.dbinit.tests
         public void Can_Add_Installed_Version_With_Transaction()
         {
             var context = GetInitializedContext();
-            var versionToInstall = new Version(1, 2, 3);
-            var script = new Script(
+            var versionToInstall = new context.SqlVersion(1, 2, 3);
+            var script = new SqlScript(
                 "add_version",
                 "select 42;",
                 versionToInstall,

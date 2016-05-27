@@ -1,28 +1,24 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace moonstone.dbinit
+namespace moonstone.sql.context
 {
-    public class InstalledVersion : Version, IComparable<InstalledVersion>
+    public class SqlInstalledVersion : SqlVersion, IComparable<SqlInstalledVersion>
     {
         public DateTime InstallDateUtc { get; set; }
 
-        public InstalledVersion()
+        public SqlInstalledVersion()
             : base()
         {
             this.InstallDateUtc = DateTime.MinValue;
         }
 
-        public InstalledVersion(int major, int minor, int revision, DateTime installDateUtc)
+        public SqlInstalledVersion(int major, int minor, int revision, DateTime installDateUtc)
             : base(major, minor, revision)
         {
             this.InstallDateUtc = installDateUtc;
         }
 
-        public int CompareTo(InstalledVersion other)
+        public int CompareTo(SqlInstalledVersion other)
         {
             int baseResult = base.CompareTo(other);
 
@@ -47,9 +43,9 @@ namespace moonstone.dbinit
             }
         }
 
-        public Version GetVersion()
+        public SqlVersion GetVersion()
         {
-            return new Version(this.Major, this.Minor, this.Revision);
+            return new SqlVersion(this.Major, this.Minor, this.Revision);
         }
     }
 }

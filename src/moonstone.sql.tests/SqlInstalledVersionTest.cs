@@ -1,15 +1,12 @@
 ﻿using FluentAssertions;
+using moonstone.sql.context;
 using NUnit.Framework;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace moonstone.dbinit.tests
+namespace moonstone.sql.tests
 {
     [TestFixture]
-    public class InstalledVersionTest
+    public class SqlInstalledVersionTest
     {
         [Test]
         public void Can_Compare()
@@ -38,8 +35,8 @@ namespace moonstone.dbinit.tests
         [Test]
         public void Can_Return_Version()
         {
-            var installed = new InstalledVersion(1, 2, 3, DateTime.UtcNow);
-            var expected = new Version(1, 2, 3);
+            var installed = new SqlInstalledVersion(1, 2, 3, DateTime.UtcNow);
+            var expected = new context.SqlVersion(1, 2, 3);
 
             var actual = installed.GetVersion();
 
