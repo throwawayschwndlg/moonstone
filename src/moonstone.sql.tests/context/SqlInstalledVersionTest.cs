@@ -3,7 +3,7 @@ using moonstone.sql.context;
 using NUnit.Framework;
 using System;
 
-namespace moonstone.sql.tests
+namespace moonstone.sql.tests.context
 {
     [TestFixture]
     public class SqlInstalledVersionTest
@@ -36,11 +36,19 @@ namespace moonstone.sql.tests
         public void Can_Return_Version()
         {
             var installed = new SqlInstalledVersion(1, 2, 3, DateTime.UtcNow);
-            var expected = new context.SqlVersion(1, 2, 3);
+            var expected = new SqlVersion(1, 2, 3);
 
             var actual = installed.GetVersion();
 
             actual.ShouldBeEquivalentTo(expected);
+        }
+
+        [Test]
+        public void Can_Stringify_Version()
+        {
+            var version = new SqlVersion(25, 18, 99);
+
+            Assert.AreEqual("25.18.99", version.ToString());
         }
     }
 }

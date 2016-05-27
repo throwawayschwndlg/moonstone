@@ -14,7 +14,7 @@ namespace moonstone.sql.context
         /// <summary>
         /// Initializes a new context
         /// </summary>
-        /// <param name="serverConnectionString">Connection String to the Server, without the database name</param>
+        /// <param name="serverAddress">Connection String to the Server, without the database name</param>
         /// <param name="databaseName">The name of the database</param>
         public SqlContext(string databaseName, string serverAddress, bool integratedSecurity)
         {
@@ -29,19 +29,24 @@ namespace moonstone.sql.context
         protected SqlConnection CurrentConnection { get; set; }
 
         /// <summary>
+        /// Holds the current SqlTransaction
+        /// </summary>
+        protected SqlTransaction CurrentTransaction { get; set; }
+
+        /// <summary>
         /// The name of the database
         /// </summary>
-        protected string DatabaseName { get; set; }
+        public string DatabaseName { get; protected set; }
 
         /// <summary>
         /// Controls if integrated security should be used
         /// </summary>
-        protected bool IntegratedSecurity { get; set; }
+        public bool IntegratedSecurity { get; protected set; }
 
         /// <summary>
         /// The connection string the the server
         /// </summary>
-        protected string ServerAddress { get; set; }
+        public string ServerAddress { get; protected set; }
 
         /// <summary>
         /// Adds a record to the version table
@@ -301,7 +306,7 @@ namespace moonstone.sql.context
         }
 
         /// <summary>
-        /// Initializes the database
+        /// Initializes the database and sets current version to 0.0.0
         /// </summary>
         public void Init()
         {
@@ -315,6 +320,7 @@ namespace moonstone.sql.context
                 if (!this.VersionTableExists())
                 {
                     this.CreateVersionTable();
+                    this.AddInstalledVersion(new SqlInstalledVersion(0, 0, 0, DateTime.UtcNow));
                 }
             }
             catch (Exception e)
@@ -334,7 +340,7 @@ namespace moonstone.sql.context
             {
                 try
                 {
-                    this.CurrentConnection = new SqlConnection()
+                    this.CurrentConnection = new SqlConnection
                     {
                         ConnectionString = this.ConnectionString()
                     };
@@ -346,18 +352,26 @@ namespace moonstone.sql.context
                 }
             }
 
-            if (this.CurrentConnection.State != System.Data.ConnectionState.Open)
+            try
             {
-                this.CurrentConnection.Open();
-            }
+                if (this.CurrentConnection.State != System.Data.ConnectionState.Open)
+                {
+                    this.CurrentConnection.Open();
+                }
 
-            return this.CurrentConnection;
+                return this.CurrentConnection;
+            }
+            catch (Exception e)
+            {
+                throw new OpenConnectionException(
+                    $"Failed to open connection.", e);
+            }
         }
 
         /// <summary>
         /// Returns the @@VERSION of the SQL Server
         /// </summary>
-        /// <returns>Server Version, eg. Microsoft SQL Server 2014 - 12.0.2269.0 (X64)   Jun 10 2015 03:35:45   Copyright (c) Microsoft Corporation  Express Edition (64-bit) on Windows NT 6.3 <X64> (Build 10586: )</returns>
+        /// <returns>Server Version, eg. Microsoft SQL Server 2014 - 12.0.2269.0 (X64)   Jun 10 2015 03:35:45   Copyright (c) Microsoft Corporation  Express Edition (64-bit) on Windows NT 6.3 ...</returns>
         public string ServerVersion()
         {
             var command = this.BuildCommand($"SELECT @@VERSION", false);
@@ -479,12 +493,64 @@ namespace moonstone.sql.context
             return VERSION_TABLE;
         }
 
-        public void BeginTransaction()
+        /// <summary>
+        /// Checks if the connection can be opened.
+        /// </summary>
+        /// <returns>True if connection can be opened, otherwise false</returns>
+        public bool CanConnect()
         {
+            try
+            {
+                this.OpenConnection();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
+        /// <summary>
+        /// Begins a new transaction on the current connection
+        /// </summary>
+        public void BeginTransaction()
+        {
+            if (this.CurrentTransaction != null)
+            {
+                throw new TransactionAlreadyInitializedException(
+                    $"Transaction was already initialized");
+            }
+
+            this.CurrentTransaction = this.CurrentConnection.BeginTransaction();
+        }
+
+        /// <summary>
+        /// Commits the current transaction. Rolls back if commit failed.
+        /// </summary>
         public void CommitTransaction()
         {
+            if (this.CurrentTransaction == null)
+            {
+                throw new TransactionNotInitializedException(
+                    $"The transaction is not initialized");
+            }
+
+            try
+            {
+                this.CurrentTransaction.Commit();
+            }
+            catch (Exception e)
+            {
+                this.CurrentTransaction.Rollback();
+
+                throw new CommitTransactionException(
+                    $"Failed to commit the transaction", e);
+            }
+            finally
+            {
+                this.CurrentTransaction.Dispose();
+                this.CurrentTransaction = null;
+            }
         }
     }
 }

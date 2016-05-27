@@ -2,7 +2,7 @@
 using moonstone.core.repositories;
 using moonstone.sql.context;
 
-namespace moonstone.sql.repositories
+namespace moonstone.sql.context
 {
     public class SqlUnitOfWork : IUnitOfWork
     {

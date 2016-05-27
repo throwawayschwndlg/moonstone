@@ -1,6 +1,7 @@
 ﻿using moonstone.core.exceptions;
 using System;
 using System.IO;
+using System.Linq;
 
 namespace moonstone.sql.context
 {
@@ -27,8 +28,26 @@ namespace moonstone.sql.context
 
         public static SqlScript FromFile(string name, string path, SqlVersion version, bool useSpecifiedDatabase, bool useTransaction)
         {
-            string content = null;
+            var content = ReadContent(path);
+            return FromContent(name, content, version, useSpecifiedDatabase, useTransaction);
+        }
 
+        public static SqlScript FromFile(string name, string path, bool useSpecifiedDatabase, bool useTransaction)
+        {
+            var content = ReadContent(path);
+            var version = ParseVersion(content);
+
+            return FromContent(name, content, version, useSpecifiedDatabase, useTransaction);
+        }
+
+        public static SqlScript FromContent(string name, string content, SqlVersion version, bool useSpecifiedDatabase, bool useTransaction)
+        {
+            return new SqlScript(name, content, version, useSpecifiedDatabase, useTransaction);
+        }
+
+        protected static string ReadContent(string path)
+        {
+            string content;
             try
             {
                 content = File.ReadAllText(path);
@@ -39,7 +58,33 @@ namespace moonstone.sql.context
                     $"Failed to read contents from {path}", e);
             }
 
-            return new SqlScript(name, content, version, useSpecifiedDatabase, useTransaction);
+            return content;
+        }
+
+        protected static SqlVersion ParseVersion(string content)
+        {
+            if (!string.IsNullOrWhiteSpace(content))
+            {
+                try
+                {
+                    var firstLine = content.Split(Environment.NewLine.ToCharArray()).First();
+                    firstLine = firstLine.Replace("--", string.Empty);
+                    firstLine = firstLine.Trim();
+                    var versionNumbers = firstLine.Split('.').Select(v => int.Parse(v)).ToArray();
+
+                    return new SqlVersion(versionNumbers[0], versionNumbers[1], versionNumbers[2]);
+                }
+                catch (Exception e)
+                {
+                    throw new ParseException(
+                        $"Failed to parse file.", e);
+                }
+            }
+            else
+            {
+                throw new EmptyFileException(
+                       $"File is empty.");
+            }
         }
     }
 }

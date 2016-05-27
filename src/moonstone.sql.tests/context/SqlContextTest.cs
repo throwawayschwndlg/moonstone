@@ -4,7 +4,7 @@ using moonstone.sql.context;
 using NUnit.Framework;
 using System;
 
-namespace moonstone.sql.tests
+namespace moonstone.sql.test.context
 {
     [TestFixture]
     public class SqlContextTest
@@ -22,39 +22,39 @@ namespace moonstone.sql.tests
 
         public static SqlContext GetInitializedContext()
         {
-            var context = GetValidContext();
-            context.Init();
+            var validContext = GetValidContext();
+            validContext.Init();
 
-            return context;
+            return validContext;
         }
 
         [SetUp]
         public void Setup()
         {
-            var context = GetValidContext();
-            if (context.Exists())
+            var validContext = GetValidContext();
+            if (validContext.Exists())
             {
-                context.Drop();
+                validContext.Drop();
             }
-            context.Create();
+            validContext.Create();
         }
 
         [TearDown]
         public void Teardown()
         {
-            var context = GetValidContext();
-            if (context.Exists())
+            var validContext = GetValidContext();
+            if (validContext.Exists())
             {
-                context.Drop();
+                validContext.Drop();
             }
         }
 
         [Test]
         public void Can_Open_Valid_Connection()
         {
-            var context = GetValidContext();
+            var validContext = GetValidContext();
 
-            var connection = context.OpenConnection();
+            var connection = validContext.OpenConnection();
 
             Assert.IsTrue(connection.State == System.Data.ConnectionState.Open);
         }
@@ -62,9 +62,9 @@ namespace moonstone.sql.tests
         [Test]
         public void Can_Read_Server_Version()
         {
-            var context = GetValidContext();
+            var validContext = GetValidContext();
 
-            string version = context.ServerVersion();
+            string version = validContext.ServerVersion();
 
             Assert.That(version.Contains("Microsoft SQL Server"));
         }
@@ -72,20 +72,20 @@ namespace moonstone.sql.tests
         [Test]
         public void Can_Find_DB()
         {
-            var context = GetValidContext();
+            var validContext = GetValidContext();
 
-            Assert.IsTrue(context.Exists());
+            Assert.IsTrue(validContext.Exists());
         }
 
         [Test]
         public void Can_Run_Multiple_Queries()
         {
-            var context = GetValidContext();
+            var validContext = GetValidContext();
 
             try
             {
-                context.Exists();
-                context.ServerVersion();
+                validContext.Exists();
+                validContext.ServerVersion();
             }
             catch (Exception e)
             {
@@ -96,23 +96,23 @@ namespace moonstone.sql.tests
         [Test]
         public void Cannot_Find_DB()
         {
-            var context = GetValidContext();
-            if (context.Exists())
+            var validContext = GetValidContext();
+            if (validContext.Exists())
             {
-                context.Drop();
+                validContext.Drop();
             }
 
-            Assert.IsFalse(context.Exists());
+            Assert.IsFalse(validContext.Exists());
         }
 
         [Test]
         public void Can_Drop_DB()
         {
-            var context = GetValidContext();
+            var validContext = GetValidContext();
             try
             {
-                context.Drop();
-                Assert.IsFalse(context.Exists());
+                validContext.Drop();
+                Assert.IsFalse(validContext.Exists());
             }
             catch (Exception e)
             {
@@ -123,16 +123,16 @@ namespace moonstone.sql.tests
         [Test]
         public void Can_Create_DB()
         {
-            var context = GetValidContext();
-            if (context.Exists())
+            var validContext = GetValidContext();
+            if (validContext.Exists())
             {
-                context.Drop();
+                validContext.Drop();
             }
 
             try
             {
-                context.Create();
-                Assert.IsTrue(context.Exists());
+                validContext.Create();
+                Assert.IsTrue(validContext.Exists());
             }
             catch (Exception e)
             {
@@ -143,9 +143,9 @@ namespace moonstone.sql.tests
         [Test]
         public void Returns_False_If_Version_Table_Does_Not_Exist()
         {
-            var context = GetValidContext();
+            var validContext = GetValidContext();
 
-            bool exists = context.VersionTableExists();
+            bool exists = validContext.VersionTableExists();
 
             Assert.IsFalse(exists);
         }
@@ -153,24 +153,24 @@ namespace moonstone.sql.tests
         [Test]
         public void Returns_False_If_Database_Does_Not_Exist()
         {
-            var context = GetValidContext();
-            if (context.Exists())
+            var validContext = GetValidContext();
+            if (validContext.Exists())
             {
-                context.Drop();
+                validContext.Drop();
             }
 
-            Assert.IsFalse(context.Exists());
+            Assert.IsFalse(validContext.Exists());
 
-            Assert.IsFalse(context.VersionTableExists());
+            Assert.IsFalse(validContext.VersionTableExists());
         }
 
         [Test]
         public void Can_Create_Version_Table()
         {
-            var context = GetValidContext();
+            var validContext = GetValidContext();
 
-            context.CreateVersionTable();
-            bool exists = context.VersionTableExists();
+            validContext.CreateVersionTable();
+            bool exists = validContext.VersionTableExists();
 
             Assert.IsTrue(exists);
         }
@@ -178,10 +178,10 @@ namespace moonstone.sql.tests
         [Test]
         public void Returns_True_If_Version_Table_Exists()
         {
-            var context = GetValidContext();
-            context.CreateVersionTable();
+            var validContext = GetValidContext();
+            validContext.CreateVersionTable();
 
-            bool exists = context.VersionTableExists();
+            bool exists = validContext.VersionTableExists();
 
             Assert.True(exists);
         }
@@ -189,11 +189,11 @@ namespace moonstone.sql.tests
         [Test]
         public void Can_Build_Command_Master()
         {
-            var context = GetValidContext();
+            var validContext = GetValidContext();
             string command = "SELECT 42";
             string expected = $"USE master; {command}";
 
-            string result = context.BuildCommand(command, false);
+            string result = validContext.BuildCommand(command, false);
 
             Assert.AreEqual(expected, result);
         }
@@ -201,11 +201,11 @@ namespace moonstone.sql.tests
         [Test]
         public void Can_Build_Command_Specific()
         {
-            var context = GetValidContext();
+            var validContext = GetValidContext();
             string command = "SELECT 42";
             var expected = $"USE {DATABASE_NAME}; {command}";
 
-            string result = context.BuildCommand(command, true);
+            string result = validContext.BuildCommand(command, true);
 
             Assert.AreEqual(expected, result);
         }
@@ -213,10 +213,10 @@ namespace moonstone.sql.tests
         [Test]
         public void Returns_Null_If_No_Version_Installed()
         {
-            var context = GetValidContext();
-            context.SqlVersion version = null;
+            var validContext = GetValidContext();
+            SqlVersion version = null;
 
-            version = context.GetInstalledVersion();
+            version = validContext.GetInstalledVersion();
 
             Assert.IsNull(version);
         }
@@ -224,16 +224,16 @@ namespace moonstone.sql.tests
         [Test]
         public void Can_Get_Latest_Version()
         {
-            var context = GetInitializedContext();
+            var initializedContext = GetInitializedContext();
             var ver1 = new SqlInstalledVersion(1, 0, 0, DateTime.Now);
             var ver2 = new SqlInstalledVersion(1, 2, 3, DateTime.Now);
             var ver3 = new SqlInstalledVersion(2, 0, 0, DateTime.Now);
 
-            context.AddInstalledVersion(ver1);
-            context.AddInstalledVersion(ver2);
-            context.AddInstalledVersion(ver3);
+            initializedContext.AddInstalledVersion(ver1);
+            initializedContext.AddInstalledVersion(ver2);
+            initializedContext.AddInstalledVersion(ver3);
 
-            var installed = context.GetInstalledVersion();
+            var installed = initializedContext.GetInstalledVersion();
 
             installed.ShouldBeEquivalentTo(ver3, options =>
                 options.Using<DateTime>(x => x.Subject.Should().BeCloseTo(ver3.InstallDateUtc)).WhenTypeIs<DateTime>());
@@ -242,44 +242,44 @@ namespace moonstone.sql.tests
         [Test]
         public void Init_Creates_Database()
         {
-            var context = GetValidContext();
-            if (context.Exists())
+            var validContext = GetValidContext();
+            if (validContext.Exists())
             {
-                context.Drop();
+                validContext.Drop();
             }
 
-            Assert.IsFalse(context.Exists());
+            Assert.IsFalse(validContext.Exists());
 
-            context.Init();
+            validContext.Init();
 
-            Assert.IsTrue(context.Exists());
+            Assert.IsTrue(validContext.Exists());
         }
 
         [Test]
         public void Init_Creates_Version_Table()
         {
-            var context = GetValidContext();
-            if (context.Exists())
+            var validContext = GetValidContext();
+            if (validContext.Exists())
             {
-                context.Drop();
+                validContext.Drop();
             }
 
-            Assert.IsFalse(context.VersionTableExists());
+            Assert.IsFalse(validContext.VersionTableExists());
 
-            context.Init();
+            validContext.Init();
 
-            Assert.IsTrue(context.VersionTableExists());
+            Assert.IsTrue(validContext.VersionTableExists());
         }
 
         [Test]
         public void Can_Add_Version()
         {
-            var context = GetInitializedContext();
+            var initializedContext = GetInitializedContext();
             var toAdd = new SqlInstalledVersion(1, 2, 3, DateTime.UtcNow);
 
-            context.AddInstalledVersion(toAdd);
+            initializedContext.AddInstalledVersion(toAdd);
 
-            var installed = context.GetInstalledVersion();
+            var installed = initializedContext.GetInstalledVersion();
 
             installed.ShouldBeEquivalentTo(toAdd, options =>
                 options.Using<DateTime>(x => x.Subject.Should().BeCloseTo(toAdd.InstallDateUtc)).WhenTypeIs<DateTime>());
@@ -288,20 +288,20 @@ namespace moonstone.sql.tests
         [Test]
         public void Can_Not_Add_Lower_Version()
         {
-            var context = GetInitializedContext();
+            var initializedContext = GetInitializedContext();
             var ver1 = new SqlInstalledVersion(2, 0, 0, DateTime.UtcNow);
             var ver2 = new SqlInstalledVersion(1, 9, 9, DateTime.UtcNow);
-            context.AddInstalledVersion(ver1);
+            initializedContext.AddInstalledVersion(ver1);
 
-            Assert.Throws<LowerOrEqualVersionException>(() => context.AddInstalledVersion(ver2));
+            Assert.Throws<LowerOrEqualVersionException>(() => initializedContext.AddInstalledVersion(ver2));
         }
 
         [Test]
         public void Can_Find_Specified_Table()
         {
-            var context = GetInitializedContext();
+            var initializedContext = GetInitializedContext();
 
-            bool exists = context.TableExists(context.VersionTableName(), true);
+            bool exists = initializedContext.TableExists(initializedContext.VersionTableName(), true);
 
             Assert.IsTrue(exists);
         }
@@ -309,9 +309,9 @@ namespace moonstone.sql.tests
         [Test]
         public void Can_Not_Find_Specified_Table()
         {
-            var context = GetInitializedContext();
+            var initializedContext = GetInitializedContext();
 
-            bool exists = context.TableExists("somenonexistenttable", true);
+            bool exists = initializedContext.TableExists("somenonexistenttable", true);
 
             Assert.IsFalse(exists);
         }
@@ -319,9 +319,9 @@ namespace moonstone.sql.tests
         [Test]
         public void Can_Find_Unspecified_Table()
         {
-            var context = GetInitializedContext();
+            var initializedContext = GetInitializedContext();
 
-            bool exists = context.TableExists("spt_monitor", false);
+            bool exists = initializedContext.TableExists("spt_monitor", false);
 
             Assert.IsTrue(exists);
         }
@@ -329,9 +329,9 @@ namespace moonstone.sql.tests
         [Test]
         public void Can_Not_Find_Unspecified_Table()
         {
-            var context = GetInitializedContext();
+            var initializedContext = GetInitializedContext();
 
-            bool exists = context.TableExists("something", false);
+            bool exists = initializedContext.TableExists("something", false);
 
             Assert.IsFalse(exists);
         }
@@ -339,14 +339,14 @@ namespace moonstone.sql.tests
         [Test]
         public void Can_Drop_Table_On_Specified()
         {
-            var context = GetInitializedContext();
+            var initializedContext = GetInitializedContext();
 
             bool existsBeforeDrop;
             bool existsAfterDrop;
 
-            existsBeforeDrop = context.VersionTableExists();
-            context.DropTable(context.VersionTableName(), useSpecifiedDatabase: true);
-            existsAfterDrop = context.VersionTableExists();
+            existsBeforeDrop = initializedContext.VersionTableExists();
+            initializedContext.DropTable(initializedContext.VersionTableName(), useSpecifiedDatabase: true);
+            existsAfterDrop = initializedContext.VersionTableExists();
 
             Assert.IsTrue(existsBeforeDrop);
             Assert.IsFalse(existsAfterDrop);
@@ -356,7 +356,7 @@ namespace moonstone.sql.tests
         public void Can_Drop_Table_On_Unspecified()
         {
             string tableName = "hurr";
-            var context = GetInitializedContext();
+            var initializedContext = GetInitializedContext();
 
             bool existsBeforeDrop;
             bool existsAfterDrop;
@@ -367,18 +367,18 @@ namespace moonstone.sql.tests
                     [name] NVARCHAR(128) NOT NULL,
                     PRIMARY KEY(id)
                 );",
-                new context.SqlVersion(1, 1, 1),
+                new SqlVersion(1, 1, 1),
                 useSpecifiedDatabase: false,
                 useTransaction: false);
 
-            if (!context.TableExists(tableName, useSpecifiedDatabase: false))
+            if (!initializedContext.TableExists(tableName, useSpecifiedDatabase: false))
             {
-                context.ExecuteScript(createTableScript);
+                initializedContext.ExecuteScript(createTableScript);
             }
 
-            existsBeforeDrop = context.TableExists(tableName, useSpecifiedDatabase: false);
-            context.DropTable(tableName, useSpecifiedDatabase: false);
-            existsAfterDrop = context.TableExists(tableName, useSpecifiedDatabase: false);
+            existsBeforeDrop = initializedContext.TableExists(tableName, useSpecifiedDatabase: false);
+            initializedContext.DropTable(tableName, useSpecifiedDatabase: false);
+            existsAfterDrop = initializedContext.TableExists(tableName, useSpecifiedDatabase: false);
 
             Assert.IsTrue(existsBeforeDrop);
             Assert.IsFalse(existsAfterDrop);
@@ -387,7 +387,7 @@ namespace moonstone.sql.tests
         [Test]
         public void Can_Execute_On_Specified()
         {
-            var context = SqlContextTest.GetInitializedContext();
+            var initializedContext = SqlContextTest.GetInitializedContext();
 
             bool tableExistsBeforeExecution;
             bool tableExistsAfterExecution;
@@ -402,13 +402,13 @@ namespace moonstone.sql.tests
                     );
 
                     INSERT INTO {tableName} (id, [name]) values (1, 'test');",
-                new context.SqlVersion(1, 0, 0),
+                new SqlVersion(1, 0, 0),
                 useSpecifiedDatabase: true,
                 useTransaction: false);
 
-            tableExistsBeforeExecution = context.TableExists(tableName, useSpecifiedDatabase: true);
-            context.ExecuteScript(script);
-            tableExistsAfterExecution = context.TableExists(tableName, useSpecifiedDatabase: true);
+            tableExistsBeforeExecution = initializedContext.TableExists(tableName, useSpecifiedDatabase: true);
+            initializedContext.ExecuteScript(script);
+            tableExistsAfterExecution = initializedContext.TableExists(tableName, useSpecifiedDatabase: true);
 
             Assert.IsFalse(tableExistsBeforeExecution);
             Assert.IsTrue(tableExistsAfterExecution);
@@ -417,7 +417,7 @@ namespace moonstone.sql.tests
         [Test]
         public void Can_Execute_On_Unspecified()
         {
-            var context = GetInitializedContext();
+            var initializedContext = GetInitializedContext();
 
             bool tableExistsBeforeExecution;
             bool tableExistsAfterExecution;
@@ -432,19 +432,19 @@ namespace moonstone.sql.tests
                     );
 
                 INSERT INTO {tableName} (id, [name]) values (1, 'test');",
-                new context.SqlVersion(1, 0, 0),
+                new SqlVersion(1, 0, 0),
                 useSpecifiedDatabase: false,
                 useTransaction: false);
 
-            if (context.TableExists(tableName, useSpecifiedDatabase: false))
+            if (initializedContext.TableExists(tableName, useSpecifiedDatabase: false))
             {
-                context.DropTable(tableName, useSpecifiedDatabase: false);
+                initializedContext.DropTable(tableName, useSpecifiedDatabase: false);
             }
 
-            tableExistsBeforeExecution = context.TableExists(tableName, useSpecifiedDatabase: false);
-            context.ExecuteScript(script);
-            tableExistsAfterExecution = context.TableExists(tableName, useSpecifiedDatabase: false);
-            context.DropTable(tableName, useSpecifiedDatabase: false);
+            tableExistsBeforeExecution = initializedContext.TableExists(tableName, useSpecifiedDatabase: false);
+            initializedContext.ExecuteScript(script);
+            tableExistsAfterExecution = initializedContext.TableExists(tableName, useSpecifiedDatabase: false);
+            initializedContext.DropTable(tableName, useSpecifiedDatabase: false);
 
             Assert.IsFalse(tableExistsBeforeExecution);
             Assert.IsTrue(tableExistsAfterExecution);
@@ -456,7 +456,7 @@ namespace moonstone.sql.tests
             string tableName = "animals";
             bool tableExistsBeforeExecution = false;
             bool tableExistsAfterExecution = false;
-            var context = GetInitializedContext();
+            var initializedContext = GetInitializedContext();
             var script = new SqlScript(
                 "animals",
                 $@"CREATE TABLE {tableName}(
@@ -466,13 +466,13 @@ namespace moonstone.sql.tests
                 );
 
                 INSERT INTO {tableName} (id, [name]) VALUES(1, 'dog');",
-                version: new context.SqlVersion(1, 0, 0),
+                version: new SqlVersion(1, 0, 0),
                 useSpecifiedDatabase: true,
                 useTransaction: true);
 
-            tableExistsBeforeExecution = context.TableExists(tableName, true);
-            context.ExecuteScript(script);
-            tableExistsAfterExecution = context.TableExists(tableName, true);
+            tableExistsBeforeExecution = initializedContext.TableExists(tableName, true);
+            initializedContext.ExecuteScript(script);
+            tableExistsAfterExecution = initializedContext.TableExists(tableName, true);
 
             Assert.IsFalse(tableExistsBeforeExecution);
             Assert.IsTrue(tableExistsAfterExecution);
@@ -484,7 +484,7 @@ namespace moonstone.sql.tests
             string tableName = "animals";
             bool tableExistsBeforeExecution = false;
             bool tableExistsAfterExecution = false;
-            var context = GetInitializedContext();
+            var initializedContext = GetInitializedContext();
             var script = new SqlScript(
                 "animals",
                 $@"CREATE TABLE {tableName}(
@@ -494,13 +494,13 @@ namespace moonstone.sql.tests
                 );
 
                 INSERT INTO {tableName} (id, [name]) VALUES(1, 'dog');",
-                version: new context.SqlVersion(1, 0, 0),
+                version: new SqlVersion(1, 0, 0),
                 useSpecifiedDatabase: true,
                 useTransaction: false);
 
-            tableExistsBeforeExecution = context.TableExists(tableName, true);
-            context.ExecuteScript(script);
-            tableExistsAfterExecution = context.TableExists(tableName, true);
+            tableExistsBeforeExecution = initializedContext.TableExists(tableName, true);
+            initializedContext.ExecuteScript(script);
+            tableExistsAfterExecution = initializedContext.TableExists(tableName, true);
 
             Assert.IsFalse(tableExistsBeforeExecution);
             Assert.IsTrue(tableExistsAfterExecution);
@@ -509,29 +509,29 @@ namespace moonstone.sql.tests
         [Test]
         public void Cannot_Execute_Multiple_With_Same_Version()
         {
-            var context = GetInitializedContext();
+            var initializedContext = GetInitializedContext();
 
             var script1 = new SqlScript("script_1",
                 $@"SELECT 1;",
-                new context.SqlVersion(1, 0, 0),
+                new SqlVersion(1, 0, 0),
                 useSpecifiedDatabase: true,
                 useTransaction: false);
 
             var script2 = new SqlScript("script_2",
                 $@"SELECT 2;",
-                new context.SqlVersion(1, 0, 0),
+                new SqlVersion(1, 0, 0),
                 useSpecifiedDatabase: true,
                 useTransaction: false);
 
-            context.ExecuteScript(script1);
-            Assert.Throws<LowerOrEqualVersionException>(() => context.ExecuteScript(script2));
+            initializedContext.ExecuteScript(script1);
+            Assert.Throws<LowerOrEqualVersionException>(() => initializedContext.ExecuteScript(script2));
         }
 
         [Test]
         public void Can_Return_Version_Table_Name()
         {
-            var context = GetInitializedContext();
-            var versionTableName = context.VersionTableName();
+            var initializedContext = GetInitializedContext();
+            var versionTableName = initializedContext.VersionTableName();
 
             Assert.AreEqual("db_version", versionTableName);
         }
@@ -539,8 +539,8 @@ namespace moonstone.sql.tests
         [Test]
         public void Can_Add_Installed_Version_Without_Transaction()
         {
-            var context = GetInitializedContext();
-            var versionToInstall = new context.SqlVersion(1, 2, 3);
+            var initializedContext = GetInitializedContext();
+            var versionToInstall = new SqlVersion(1, 2, 3);
             var script = new SqlScript(
                 "add_version",
                 "select 42;",
@@ -548,9 +548,9 @@ namespace moonstone.sql.tests
                 useSpecifiedDatabase: true,
                 useTransaction: false);
 
-            context.ExecuteScript(script);
+            initializedContext.ExecuteScript(script);
 
-            var installedVersion = context.GetInstalledVersion().GetVersion();
+            var installedVersion = initializedContext.GetInstalledVersion().GetVersion();
 
             installedVersion.ShouldBeEquivalentTo(versionToInstall);
         }
@@ -558,8 +558,8 @@ namespace moonstone.sql.tests
         [Test]
         public void Can_Add_Installed_Version_With_Transaction()
         {
-            var context = GetInitializedContext();
-            var versionToInstall = new context.SqlVersion(1, 2, 3);
+            var initializedContext = GetInitializedContext();
+            var versionToInstall = new SqlVersion(1, 2, 3);
             var script = new SqlScript(
                 "add_version",
                 "select 42;",
@@ -567,11 +567,40 @@ namespace moonstone.sql.tests
                 useSpecifiedDatabase: true,
                 useTransaction: true);
 
-            context.ExecuteScript(script);
+            initializedContext.ExecuteScript(script);
 
-            var installedVersion = context.GetInstalledVersion().GetVersion();
+            var installedVersion = initializedContext.GetInstalledVersion().GetVersion();
 
             installedVersion.ShouldBeEquivalentTo(versionToInstall);
+        }
+
+        [Test]
+        public void Can_Set_Version_After_Init()
+        {
+            var validContext = GetValidContext();
+            var expectedVersion = new SqlVersion(0, 0, 0);
+
+            validContext.Init();
+
+            var currentVersion = validContext.GetInstalledVersion().GetVersion();
+
+            currentVersion.ShouldBeEquivalentTo(expectedVersion);
+        }
+
+        [Test]
+        public void CanConnect_Returns_True_If_Valid()
+        {
+            var validContext = GetValidContext();
+
+            Assert.IsTrue(validContext.CanConnect());
+        }
+
+        [Test]
+        public void CanConnect_Returns_False_If_Not_Valid()
+        {
+            var invalidContext = new SqlContext("somethingInvalid", "zzzzyyy", integratedSecurity: true);
+
+            Assert.IsFalse(invalidContext.CanConnect());
         }
     }
 }

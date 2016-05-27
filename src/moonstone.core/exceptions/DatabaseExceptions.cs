@@ -301,4 +301,84 @@ namespace moonstone.core.exceptions
           System.Runtime.Serialization.SerializationInfo info,
           System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
     }
+
+    [Serializable]
+    public class TransactionAlreadyInitializedException : Exception
+    {
+        public TransactionAlreadyInitializedException()
+        {
+        }
+
+        public TransactionAlreadyInitializedException(string message) : base(message)
+        {
+        }
+
+        public TransactionAlreadyInitializedException(string message, Exception inner) : base(message, inner)
+        {
+        }
+
+        protected TransactionAlreadyInitializedException(
+          System.Runtime.Serialization.SerializationInfo info,
+          System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
+    }
+
+    [Serializable]
+    public class TransactionNotInitializedException : Exception
+    {
+        public TransactionNotInitializedException()
+        {
+        }
+
+        public TransactionNotInitializedException(string message) : base(message)
+        {
+        }
+
+        public TransactionNotInitializedException(string message, Exception inner) : base(message, inner)
+        {
+        }
+
+        protected TransactionNotInitializedException(
+          System.Runtime.Serialization.SerializationInfo info,
+          System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
+    }
+
+    [Serializable]
+    public class CommitTransactionException : Exception
+    {
+        public CommitTransactionException()
+        {
+        }
+
+        public CommitTransactionException(string message) : base(message)
+        {
+        }
+
+        public CommitTransactionException(string message, Exception inner) : base(message, inner)
+        {
+        }
+
+        protected CommitTransactionException(
+          System.Runtime.Serialization.SerializationInfo info,
+          System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
+    }
+
+    [Serializable]
+    public class OpenConnectionException : Exception
+    {
+        public OpenConnectionException()
+        {
+        }
+
+        public OpenConnectionException(string message) : base(message)
+        {
+        }
+
+        public OpenConnectionException(string message, Exception inner) : base(message, inner)
+        {
+        }
+
+        protected OpenConnectionException(
+          System.Runtime.Serialization.SerializationInfo info,
+          System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
+    }
 }

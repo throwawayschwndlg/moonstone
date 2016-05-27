@@ -12,9 +12,9 @@ namespace moonstone.sql.context
 
         public SqlVersion()
         {
-            this.Major = 0;
-            this.Minor = 0;
-            this.Revision = 0;
+            this.Major = int.MinValue;
+            this.Minor = int.MinValue;
+            this.Revision = int.MinValue;
         }
 
         public SqlVersion(int major, int minor, int revision)
@@ -60,6 +60,11 @@ namespace moonstone.sql.context
                     }
                 }
             }
+        }
+
+        public override string ToString()
+        {
+            return $"{this.Major}.{this.Minor}.{this.Revision}";
         }
     }
 }

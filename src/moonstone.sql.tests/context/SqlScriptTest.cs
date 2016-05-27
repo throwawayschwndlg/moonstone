@@ -2,7 +2,7 @@
 using NUnit.Framework;
 using System.IO;
 
-namespace moonstone.sql.tests
+namespace moonstone.sql.tests.context
 {
     [TestFixture]
     public class SqlScriptTest
@@ -21,6 +21,20 @@ namespace moonstone.sql.tests
 
             Assert.AreEqual(command, script.Command);
             Assert.AreEqual(version, script.Version);
+        }
+
+        [Test]
+        public void Can_Parse_Version()
+        {
+            var path = "test_parse_version.sql";
+            var content = @"-- 3.2.34
+                            SELECT * FROM test;";
+
+            File.WriteAllText(path, content);
+
+            var script = SqlScript.FromFile("test_script", path, useSpecifiedDatabase: true, useTransaction: true);
+
+            Assert.That(script.Version.CompareTo(new SqlVersion(3, 2, 34)) == 0);
         }
     }
 }

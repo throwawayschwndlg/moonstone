@@ -2,7 +2,7 @@
 using NUnit.Framework;
 using System;
 
-namespace moonstone.sql.tests
+namespace moonstone.sql.tests.context
 {
     [TestFixture]
     public class SqlVersionTest

@@ -6,7 +6,7 @@ namespace moonstone.sql.repositories
     {
         protected SqlContext Context { get; set; }
 
-        public SqlBaseRepository(SqlContext context)
+        protected SqlBaseRepository(SqlContext context)
         {
             this.Context = context;
         }
