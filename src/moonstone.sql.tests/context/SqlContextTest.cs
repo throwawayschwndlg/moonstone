@@ -9,16 +9,8 @@ namespace moonstone.sql.test.context
     [TestFixture]
     public class SqlContextTest
     {
-        private const string SERVER_ADDRESS = ".";
-        private const bool INTEGRATED_SECURITY = true;
-        private const string SERVER_CONNECTION_STRING = "Data Source=.;Integrated Security=True;";
-
         private const string DATABASE_NAME = "moonstone_tests";
-
-        public static SqlContext GetValidContext()
-        {
-            return new SqlContext(DATABASE_NAME, SERVER_ADDRESS, INTEGRATED_SECURITY);
-        }
+        private const string SERVER_ADDRESS = ".";
 
         public static SqlContext GetInitializedContext()
         {
@@ -28,162 +20,61 @@ namespace moonstone.sql.test.context
             return validContext;
         }
 
-        [SetUp]
-        public void Setup()
+        public static SqlContext GetValidContext()
         {
-            var validContext = GetValidContext();
-            if (validContext.Exists())
-            {
-                validContext.Drop();
-            }
-            validContext.Create();
-        }
-
-        [TearDown]
-        public void Teardown()
-        {
-            var validContext = GetValidContext();
-            if (validContext.Exists())
-            {
-                validContext.Drop();
-            }
+            return new SqlContext(DATABASE_NAME, SERVER_ADDRESS);
         }
 
         [Test]
-        public void Can_Open_Valid_Connection()
+        public void Can_Add_Installed_Version_With_Transaction()
         {
-            var validContext = GetValidContext();
+            var initializedContext = GetInitializedContext();
+            var versionToInstall = new SqlVersion(1, 2, 3);
+            var script = new SqlScript(
+                "add_version",
+                "select 42;",
+                versionToInstall,
+                useSpecifiedDatabase: true,
+                useTransaction: true);
 
-            var connection = validContext.OpenConnection();
+            initializedContext.ExecuteScript(script);
 
-            Assert.IsTrue(connection.State == System.Data.ConnectionState.Open);
+            var installedVersion = initializedContext.GetInstalledVersion().GetVersion();
+
+            installedVersion.ShouldBeEquivalentTo(versionToInstall);
         }
 
         [Test]
-        public void Can_Read_Server_Version()
+        public void Can_Add_Installed_Version_Without_Transaction()
         {
-            var validContext = GetValidContext();
+            var initializedContext = GetInitializedContext();
+            var versionToInstall = new SqlVersion(1, 2, 3);
+            var script = new SqlScript(
+                "add_version",
+                "select 42;",
+                versionToInstall,
+                useSpecifiedDatabase: true,
+                useTransaction: false);
 
-            string version = validContext.ServerVersion();
+            initializedContext.ExecuteScript(script);
 
-            Assert.That(version.Contains("Microsoft SQL Server"));
+            var installedVersion = initializedContext.GetInstalledVersion().GetVersion();
+
+            installedVersion.ShouldBeEquivalentTo(versionToInstall);
         }
 
         [Test]
-        public void Can_Find_DB()
+        public void Can_Add_Version()
         {
-            var validContext = GetValidContext();
+            var initializedContext = GetInitializedContext();
+            var toAdd = new SqlInstalledVersion(1, 2, 3, DateTime.UtcNow);
 
-            Assert.IsTrue(validContext.Exists());
-        }
+            initializedContext.AddInstalledVersion(toAdd);
 
-        [Test]
-        public void Can_Run_Multiple_Queries()
-        {
-            var validContext = GetValidContext();
+            var installed = initializedContext.GetInstalledVersion();
 
-            try
-            {
-                validContext.Exists();
-                validContext.ServerVersion();
-            }
-            catch (Exception e)
-            {
-                Assert.Fail(e.ToString());
-            }
-        }
-
-        [Test]
-        public void Cannot_Find_DB()
-        {
-            var validContext = GetValidContext();
-            if (validContext.Exists())
-            {
-                validContext.Drop();
-            }
-
-            Assert.IsFalse(validContext.Exists());
-        }
-
-        [Test]
-        public void Can_Drop_DB()
-        {
-            var validContext = GetValidContext();
-            try
-            {
-                validContext.Drop();
-                Assert.IsFalse(validContext.Exists());
-            }
-            catch (Exception e)
-            {
-                Assert.Fail(e.ToString());
-            }
-        }
-
-        [Test]
-        public void Can_Create_DB()
-        {
-            var validContext = GetValidContext();
-            if (validContext.Exists())
-            {
-                validContext.Drop();
-            }
-
-            try
-            {
-                validContext.Create();
-                Assert.IsTrue(validContext.Exists());
-            }
-            catch (Exception e)
-            {
-                Assert.Fail(e.ToString());
-            }
-        }
-
-        [Test]
-        public void Returns_False_If_Version_Table_Does_Not_Exist()
-        {
-            var validContext = GetValidContext();
-
-            bool exists = validContext.VersionTableExists();
-
-            Assert.IsFalse(exists);
-        }
-
-        [Test]
-        public void Returns_False_If_Database_Does_Not_Exist()
-        {
-            var validContext = GetValidContext();
-            if (validContext.Exists())
-            {
-                validContext.Drop();
-            }
-
-            Assert.IsFalse(validContext.Exists());
-
-            Assert.IsFalse(validContext.VersionTableExists());
-        }
-
-        [Test]
-        public void Can_Create_Version_Table()
-        {
-            var validContext = GetValidContext();
-
-            validContext.CreateVersionTable();
-            bool exists = validContext.VersionTableExists();
-
-            Assert.IsTrue(exists);
-        }
-
-        [Test]
-        public void Returns_True_If_Version_Table_Exists()
-        {
-            var validContext = GetValidContext();
-            validContext.CreateVersionTable();
-
-            bool exists = validContext.VersionTableExists();
-
-            Assert.True(exists);
+            installed.ShouldBeEquivalentTo(toAdd, options =>
+                options.Using<DateTime>(x => x.Subject.Should().BeCloseTo(toAdd.InstallDateUtc)).WhenTypeIs<DateTime>());
         }
 
         [Test]
@@ -211,36 +102,7 @@ namespace moonstone.sql.test.context
         }
 
         [Test]
-        public void Returns_Null_If_No_Version_Installed()
-        {
-            var validContext = GetValidContext();
-            SqlVersion version = null;
-
-            version = validContext.GetInstalledVersion();
-
-            Assert.IsNull(version);
-        }
-
-        [Test]
-        public void Can_Get_Latest_Version()
-        {
-            var initializedContext = GetInitializedContext();
-            var ver1 = new SqlInstalledVersion(1, 0, 0, DateTime.Now);
-            var ver2 = new SqlInstalledVersion(1, 2, 3, DateTime.Now);
-            var ver3 = new SqlInstalledVersion(2, 0, 0, DateTime.Now);
-
-            initializedContext.AddInstalledVersion(ver1);
-            initializedContext.AddInstalledVersion(ver2);
-            initializedContext.AddInstalledVersion(ver3);
-
-            var installed = initializedContext.GetInstalledVersion();
-
-            installed.ShouldBeEquivalentTo(ver3, options =>
-                options.Using<DateTime>(x => x.Subject.Should().BeCloseTo(ver3.InstallDateUtc)).WhenTypeIs<DateTime>());
-        }
-
-        [Test]
-        public void Init_Creates_Database()
+        public void Can_Create_DB()
         {
             var validContext = GetValidContext();
             if (validContext.Exists())
@@ -248,92 +110,50 @@ namespace moonstone.sql.test.context
                 validContext.Drop();
             }
 
-            Assert.IsFalse(validContext.Exists());
-
-            validContext.Init();
-
-            Assert.IsTrue(validContext.Exists());
+            try
+            {
+                validContext.Create();
+                Assert.IsTrue(validContext.Exists());
+            }
+            catch (Exception e)
+            {
+                Assert.Fail(e.ToString());
+            }
         }
 
         [Test]
-        public void Init_Creates_Version_Table()
+        public void Can_Create_Login()
         {
             var validContext = GetValidContext();
-            if (validContext.Exists())
+
+            validContext.CreateLogin("user_1", "p@ssw0rd");
+            validContext.RemoveLogin("user_1");
+        }
+
+        [Test]
+        public void Can_Create_Version_Table()
+        {
+            var validContext = GetValidContext();
+
+            validContext.CreateVersionTable();
+            bool exists = validContext.VersionTableExists();
+
+            Assert.IsTrue(exists);
+        }
+
+        [Test]
+        public void Can_Drop_DB()
+        {
+            var validContext = GetValidContext();
+            try
             {
                 validContext.Drop();
+                Assert.IsFalse(validContext.Exists());
             }
-
-            Assert.IsFalse(validContext.VersionTableExists());
-
-            validContext.Init();
-
-            Assert.IsTrue(validContext.VersionTableExists());
-        }
-
-        [Test]
-        public void Can_Add_Version()
-        {
-            var initializedContext = GetInitializedContext();
-            var toAdd = new SqlInstalledVersion(1, 2, 3, DateTime.UtcNow);
-
-            initializedContext.AddInstalledVersion(toAdd);
-
-            var installed = initializedContext.GetInstalledVersion();
-
-            installed.ShouldBeEquivalentTo(toAdd, options =>
-                options.Using<DateTime>(x => x.Subject.Should().BeCloseTo(toAdd.InstallDateUtc)).WhenTypeIs<DateTime>());
-        }
-
-        [Test]
-        public void Can_Not_Add_Lower_Version()
-        {
-            var initializedContext = GetInitializedContext();
-            var ver1 = new SqlInstalledVersion(2, 0, 0, DateTime.UtcNow);
-            var ver2 = new SqlInstalledVersion(1, 9, 9, DateTime.UtcNow);
-            initializedContext.AddInstalledVersion(ver1);
-
-            Assert.Throws<LowerOrEqualVersionException>(() => initializedContext.AddInstalledVersion(ver2));
-        }
-
-        [Test]
-        public void Can_Find_Specified_Table()
-        {
-            var initializedContext = GetInitializedContext();
-
-            bool exists = initializedContext.TableExists(initializedContext.VersionTableName(), true);
-
-            Assert.IsTrue(exists);
-        }
-
-        [Test]
-        public void Can_Not_Find_Specified_Table()
-        {
-            var initializedContext = GetInitializedContext();
-
-            bool exists = initializedContext.TableExists("somenonexistenttable", true);
-
-            Assert.IsFalse(exists);
-        }
-
-        [Test]
-        public void Can_Find_Unspecified_Table()
-        {
-            var initializedContext = GetInitializedContext();
-
-            bool exists = initializedContext.TableExists("spt_monitor", false);
-
-            Assert.IsTrue(exists);
-        }
-
-        [Test]
-        public void Can_Not_Find_Unspecified_Table()
-        {
-            var initializedContext = GetInitializedContext();
-
-            bool exists = initializedContext.TableExists("something", false);
-
-            Assert.IsFalse(exists);
+            catch (Exception e)
+            {
+                Assert.Fail(e.ToString());
+            }
         }
 
         [Test]
@@ -507,6 +327,166 @@ namespace moonstone.sql.test.context
         }
 
         [Test]
+        public void Can_Find_DB()
+        {
+            var validContext = GetValidContext();
+
+            Assert.IsTrue(validContext.Exists());
+        }
+
+        [Test]
+        public void Can_Find_Specified_Table()
+        {
+            var initializedContext = GetInitializedContext();
+
+            bool exists = initializedContext.TableExists(initializedContext.VersionTableName(), true);
+
+            Assert.IsTrue(exists);
+        }
+
+        [Test]
+        public void Can_Find_Unspecified_Table()
+        {
+            var initializedContext = GetInitializedContext();
+
+            bool exists = initializedContext.TableExists("spt_monitor", false);
+
+            Assert.IsTrue(exists);
+        }
+
+        [Test]
+        public void Can_Get_Latest_Version()
+        {
+            var initializedContext = GetInitializedContext();
+            var ver1 = new SqlInstalledVersion(1, 0, 0, DateTime.Now);
+            var ver2 = new SqlInstalledVersion(1, 2, 3, DateTime.Now);
+            var ver3 = new SqlInstalledVersion(2, 0, 0, DateTime.Now);
+
+            initializedContext.AddInstalledVersion(ver1);
+            initializedContext.AddInstalledVersion(ver2);
+            initializedContext.AddInstalledVersion(ver3);
+
+            var installed = initializedContext.GetInstalledVersion();
+
+            installed.ShouldBeEquivalentTo(ver3, options =>
+                options.Using<DateTime>(x => x.Subject.Should().BeCloseTo(ver3.InstallDateUtc)).WhenTypeIs<DateTime>());
+        }
+
+        [Test]
+        public void Can_Not_Add_Lower_Version()
+        {
+            var initializedContext = GetInitializedContext();
+            var ver1 = new SqlInstalledVersion(2, 0, 0, DateTime.UtcNow);
+            var ver2 = new SqlInstalledVersion(1, 9, 9, DateTime.UtcNow);
+            initializedContext.AddInstalledVersion(ver1);
+
+            Assert.Throws<LowerOrEqualVersionException>(() => initializedContext.AddInstalledVersion(ver2));
+        }
+
+        [Test]
+        public void Can_Not_Find_Specified_Table()
+        {
+            var initializedContext = GetInitializedContext();
+
+            bool exists = initializedContext.TableExists("somenonexistenttable", true);
+
+            Assert.IsFalse(exists);
+        }
+
+        [Test]
+        public void Can_Not_Find_Unspecified_Table()
+        {
+            var initializedContext = GetInitializedContext();
+
+            bool exists = initializedContext.TableExists("something", false);
+
+            Assert.IsFalse(exists);
+        }
+
+        [Test]
+        public void Can_Open_Valid_Connection()
+        {
+            var validContext = GetValidContext();
+
+            var connection = validContext.OpenConnection();
+
+            Assert.IsTrue(connection.State == System.Data.ConnectionState.Open);
+        }
+
+        [Test]
+        public void Can_Read_Server_Version()
+        {
+            var validContext = GetValidContext();
+
+            string version = validContext.ServerVersion();
+
+            Assert.That(version.Contains("Microsoft SQL Server"));
+        }
+
+        [Test]
+        public void Can_Remove_Login()
+        {
+            var validContext = GetValidContext();
+
+            validContext.CreateLogin("toBeRemoved", "removeMe!!!11");
+            validContext.RemoveLogin("toBeRemoved");
+        }
+
+        [Test]
+        public void Can_Return_Version_Table_Name()
+        {
+            var initializedContext = GetInitializedContext();
+            var versionTableName = initializedContext.VersionTableName();
+
+            Assert.AreEqual("db_version", versionTableName);
+        }
+
+        [Test]
+        public void Can_Run_Multiple_Queries()
+        {
+            var validContext = GetValidContext();
+
+            try
+            {
+                validContext.Exists();
+                validContext.ServerVersion();
+            }
+            catch (Exception e)
+            {
+                Assert.Fail(e.ToString());
+            }
+        }
+
+        [Test]
+        public void Can_Set_Version_After_Init()
+        {
+            var validContext = GetValidContext();
+            var expectedVersion = new SqlVersion(0, 0, 0);
+
+            validContext.Init();
+
+            var currentVersion = validContext.GetInstalledVersion().GetVersion();
+
+            currentVersion.ShouldBeEquivalentTo(expectedVersion);
+        }
+
+        [Test]
+        public void CanConnect_Returns_False_If_Not_Valid()
+        {
+            var invalidContext = new SqlContext("somethingInvalid", "zzzzyyy");
+
+            Assert.IsFalse(invalidContext.CanConnect());
+        }
+
+        [Test]
+        public void CanConnect_Returns_True_If_Valid()
+        {
+            var validContext = GetValidContext();
+
+            Assert.IsTrue(validContext.CanConnect());
+        }
+
+        [Test]
         public void Cannot_Execute_Multiple_With_Same_Version()
         {
             var initializedContext = GetInitializedContext();
@@ -528,79 +508,138 @@ namespace moonstone.sql.test.context
         }
 
         [Test]
-        public void Can_Return_Version_Table_Name()
-        {
-            var initializedContext = GetInitializedContext();
-            var versionTableName = initializedContext.VersionTableName();
-
-            Assert.AreEqual("db_version", versionTableName);
-        }
-
-        [Test]
-        public void Can_Add_Installed_Version_Without_Transaction()
-        {
-            var initializedContext = GetInitializedContext();
-            var versionToInstall = new SqlVersion(1, 2, 3);
-            var script = new SqlScript(
-                "add_version",
-                "select 42;",
-                versionToInstall,
-                useSpecifiedDatabase: true,
-                useTransaction: false);
-
-            initializedContext.ExecuteScript(script);
-
-            var installedVersion = initializedContext.GetInstalledVersion().GetVersion();
-
-            installedVersion.ShouldBeEquivalentTo(versionToInstall);
-        }
-
-        [Test]
-        public void Can_Add_Installed_Version_With_Transaction()
-        {
-            var initializedContext = GetInitializedContext();
-            var versionToInstall = new SqlVersion(1, 2, 3);
-            var script = new SqlScript(
-                "add_version",
-                "select 42;",
-                versionToInstall,
-                useSpecifiedDatabase: true,
-                useTransaction: true);
-
-            initializedContext.ExecuteScript(script);
-
-            var installedVersion = initializedContext.GetInstalledVersion().GetVersion();
-
-            installedVersion.ShouldBeEquivalentTo(versionToInstall);
-        }
-
-        [Test]
-        public void Can_Set_Version_After_Init()
+        public void Cannot_Find_DB()
         {
             var validContext = GetValidContext();
-            var expectedVersion = new SqlVersion(0, 0, 0);
+            if (validContext.Exists())
+            {
+                validContext.Drop();
+            }
+
+            Assert.IsFalse(validContext.Exists());
+        }
+
+        [Test]
+        public void Init_Creates_Database()
+        {
+            var validContext = GetValidContext();
+            if (validContext.Exists())
+            {
+                validContext.Drop();
+            }
+
+            Assert.IsFalse(validContext.Exists());
 
             validContext.Init();
 
-            var currentVersion = validContext.GetInstalledVersion().GetVersion();
-
-            currentVersion.ShouldBeEquivalentTo(expectedVersion);
+            Assert.IsTrue(validContext.Exists());
         }
 
         [Test]
-        public void CanConnect_Returns_True_If_Valid()
+        public void Init_Creates_Version_Table()
+        {
+            var validContext = GetValidContext();
+            if (validContext.Exists())
+            {
+                validContext.Drop();
+            }
+
+            Assert.IsFalse(validContext.VersionTableExists());
+
+            validContext.Init();
+
+            Assert.IsTrue(validContext.VersionTableExists());
+        }
+
+        [Test]
+        public void Returns_False_If_Database_Does_Not_Exist()
+        {
+            var validContext = GetValidContext();
+            if (validContext.Exists())
+            {
+                validContext.Drop();
+            }
+
+            Assert.IsFalse(validContext.Exists());
+
+            Assert.IsFalse(validContext.VersionTableExists());
+        }
+
+        [Test]
+        public void Returns_False_If_Login_Does_Not_Exist()
         {
             var validContext = GetValidContext();
 
-            Assert.IsTrue(validContext.CanConnect());
+            bool exists = validContext.LoginExists(Guid.NewGuid().ToString());
+
+            Assert.IsFalse(exists);
         }
 
         [Test]
-        public void CanConnect_Returns_False_If_Not_Valid()
+        public void Returns_False_If_Version_Table_Does_Not_Exist()
         {
-            var invalidContext = new SqlContext("somethingInvalid", "zzzzyyy", integratedSecurity: true);
+            var validContext = GetValidContext();
 
-            Assert.IsFalse(invalidContext.CanConnect());
+            bool exists = validContext.VersionTableExists();
+
+            Assert.IsFalse(exists);
+        }
+
+        [Test]
+        public void Returns_Null_If_No_Version_Installed()
+        {
+            var validContext = GetValidContext();
+            SqlVersion version = null;
+
+            version = validContext.GetInstalledVersion();
+
+            Assert.IsNull(version);
+        }
+
+        [Test]
+        public void Returns_True_If_Login_Exists()
+        {
+            var validContext = GetValidContext();
+            string username = Guid.NewGuid().ToString().Substring(0, 8);
+            string password = Guid.NewGuid().ToString();
+
+            validContext.CreateLogin(username, password);
+            bool loginExists = validContext.LoginExists(username);
+            validContext.RemoveLogin(username);
+
+            Assert.IsTrue(loginExists);
+        }
+
+        [Test]
+        public void Returns_True_If_Version_Table_Exists()
+        {
+            var validContext = GetValidContext();
+            validContext.CreateVersionTable();
+
+            bool exists = validContext.VersionTableExists();
+
+            Assert.True(exists);
+        }
+
+        [SetUp]
+        public void Setup()
+        {
+            var validContext = GetValidContext();
+            if (validContext.Exists())
+            {
+                validContext.Drop();
+            }
+            validContext.Create();
+        }
+
+        [TearDown]
+        public void Teardown()
+        {
+            var validContext = GetValidContext();
+            if (validContext.Exists())
+            {
+                validContext.Drop();
+            }
         }
     }
 }

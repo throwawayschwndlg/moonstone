@@ -12,16 +12,37 @@ namespace moonstone.sql.context
         private const string VERSION_TABLE = "db_version";
 
         /// <summary>
-        /// Initializes a new context
+        /// The name of the database
         /// </summary>
-        /// <param name="serverAddress">Connection String to the Server, without the database name</param>
-        /// <param name="databaseName">The name of the database</param>
-        public SqlContext(string databaseName, string serverAddress, bool integratedSecurity)
+        public string DatabaseName { get; protected set; }
+
+        /// <summary>
+        /// Returns Flag indicating if integrated security should be should be used.
+        /// </summary>
+        public bool IntegratedSecurity
         {
-            this.DatabaseName = databaseName;
-            this.ServerAddress = serverAddress;
-            this.IntegratedSecurity = integratedSecurity;
+            get
+            {
+                return this.UserID == null && this.Password == null;
+            }
         }
+
+        /// <summary>
+        /// The password that will be used to connect to the database.
+        /// Set to null if integrated security should be used.
+        /// </summary>
+        public string Password { get; set; }
+
+        /// <summary>
+        /// The connection string the the server
+        /// </summary>
+        public string ServerAddress { get; protected set; }
+
+        /// <summary>
+        /// The user id that will be used to connect to the database.
+        /// Set to null if integrated security should be used.
+        /// </summary>
+        public string UserID { get; set; }
 
         /// <summary>
         /// Holds the current SqlConnection.
@@ -34,19 +55,29 @@ namespace moonstone.sql.context
         protected SqlTransaction CurrentTransaction { get; set; }
 
         /// <summary>
-        /// The name of the database
+        /// Initializes a new context. Uses integrated security for connection.
         /// </summary>
-        public string DatabaseName { get; protected set; }
+        /// <param name="serverAddress">Adress of the server hosting the database</param>
+        /// <param name="databaseName">Name of the database</param>
+        public SqlContext(string databaseName, string serverAddress)
+            : this(databaseName, serverAddress, null, null)
+        {
+        }
 
         /// <summary>
-        /// Controls if integrated security should be used
+        /// Initializes a new context.
         /// </summary>
-        public bool IntegratedSecurity { get; protected set; }
-
-        /// <summary>
-        /// The connection string the the server
-        /// </summary>
-        public string ServerAddress { get; protected set; }
+        /// <param name="databaseName">Adress of the server hosting the database</param>
+        /// <param name="serverAddress">Name of the datase</param>
+        /// <param name="userId">SQL user ID</param>
+        /// <param name="password">SQL password</param>
+        public SqlContext(string databaseName, string serverAddress, string userId, string password)
+        {
+            this.DatabaseName = databaseName;
+            this.ServerAddress = serverAddress;
+            this.UserID = userId;
+            this.Password = password;
+        }
 
         /// <summary>
         /// Adds a record to the version table
@@ -89,6 +120,20 @@ namespace moonstone.sql.context
         }
 
         /// <summary>
+        /// Begins a new transaction on the current connection
+        /// </summary>
+        public void BeginTransaction()
+        {
+            if (this.CurrentTransaction != null)
+            {
+                throw new TransactionAlreadyInitializedException(
+                    $"Transaction was already initialized");
+            }
+
+            this.CurrentTransaction = this.CurrentConnection.BeginTransaction();
+        }
+
+        /// <summary>
         /// Adds the 'USE XYZ;' part to the command.
         /// </summary>
         /// <param name="command">The command without the 'USE XYZ' part</param>
@@ -102,6 +147,73 @@ namespace moonstone.sql.context
         }
 
         /// <summary>
+        /// Checks if the connection can be opened.
+        /// </summary>
+        /// <returns>True if connection can be opened, otherwise false</returns>
+        public bool CanConnect()
+        {
+            try
+            {
+                this.OpenConnection();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Checks if there is a newer version installed. Throws AddLowerVersionException if
+        /// equal or higher version was found.
+        /// </summary>
+        /// <param name="installedVersionToCheck"></param>
+        public void CheckVersion(SqlInstalledVersion installedVersionToCheck)
+        {
+            var currentInstalledVersion = this.GetInstalledVersion();
+            if (currentInstalledVersion != null)
+            {
+                var currentVersion = currentInstalledVersion.GetVersion();
+                var versionToCheck = installedVersionToCheck.GetVersion();
+
+                if (currentVersion != null && currentVersion.CompareTo(versionToCheck) >= 0)
+                {
+                    throw new LowerOrEqualVersionException(
+                        $"Attempt to add lower version. Current version is {currentVersion}");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Commits the current transaction. Rolls back if commit failed.
+        /// </summary>
+        public void CommitTransaction()
+        {
+            if (this.CurrentTransaction == null)
+            {
+                throw new TransactionNotInitializedException(
+                    $"The transaction is not initialized");
+            }
+
+            try
+            {
+                this.CurrentTransaction.Commit();
+            }
+            catch (Exception e)
+            {
+                this.CurrentTransaction.Rollback();
+
+                throw new CommitTransactionException(
+                    $"Failed to commit the transaction", e);
+            }
+            finally
+            {
+                this.CurrentTransaction.Dispose();
+                this.CurrentTransaction = null;
+            }
+        }
+
+        /// <summary>
         /// Returns the connection string used to connect to the database
         /// </summary>
         /// <returns></returns>
@@ -110,6 +222,11 @@ namespace moonstone.sql.context
             var connectionString = new SqlConnectionStringBuilder();
             connectionString.DataSource = this.ServerAddress;
             connectionString.IntegratedSecurity = this.IntegratedSecurity;
+            if (!this.IntegratedSecurity)
+            {
+                connectionString.UserID = this.UserID;
+                connectionString.Password = this.Password;
+            }
 
             var c = connectionString.ToString();
             return connectionString.ToString();
@@ -134,6 +251,33 @@ namespace moonstone.sql.context
                     throw new CreateDatabaseException(
                         $"Failed to create database", e);
                 }
+            }
+        }
+
+        /// <summary>
+        /// Creates a new login on the database server.
+        /// </summary>
+        /// <param name="username">Username</param>
+        /// <param name="password">Password</param>
+        public void CreateLogin(string username, string password)
+        {
+            var command = this.BuildCommand($"CREATE LOGIN {username} WITH PASSWORD = '{password}';", useSpecifiedDatabase: false);
+
+            try
+            {
+                var connection = this.OpenConnection();
+                this.BeginTransaction();
+
+                connection.Query(sql: command, param: null, transaction: this.CurrentTransaction);
+
+                this.CommitTransaction();
+            }
+            catch (Exception e)
+            {
+                this.RollbackTransaction();
+
+                throw new CreateLoginException(
+                    $"Failed to create login.", e);
             }
         }
 
@@ -199,6 +343,34 @@ namespace moonstone.sql.context
                 {
                     throw new DropDatabaseException(
                         $"Failed to drop database", e);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Drops the specified table.
+        /// </summary>
+        /// <param name="tableName">Name of the table</param>
+        /// <param name="useSpecifiedDatabase">If true, the specified database will be used. Otherwise master.</param>
+        public void DropTable(string tableName, bool useSpecifiedDatabase)
+        {
+            var command = this.BuildCommand($"DROP TABLE {tableName}", useSpecifiedDatabase: useSpecifiedDatabase);
+
+            using (var connection = this.OpenConnection())
+            {
+                using (var transaction = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        connection.Query(sql: command, transaction: transaction);
+                        transaction.Commit();
+                    }
+                    catch (Exception e)
+                    {
+                        transaction.Rollback();
+                        throw new DropTableException(
+                            $"Failed to drop table {tableName}", e);
+                    }
                 }
             }
         }
@@ -331,6 +503,30 @@ namespace moonstone.sql.context
         }
 
         /// <summary>
+        /// Checks if the specified login exists on the db server.
+        /// </summary>
+        /// <param name="username">Username</param>
+        /// <returns>True if the user exists, otherwise false.</returns>
+        public bool LoginExists(string username)
+        {
+            var command = this.BuildCommand(
+                $"SELECT COUNT(*) FROM master.dbo.syslogins WHERE name = '{username}'", false);
+
+            try
+            {
+                var connection = this.OpenConnection();
+                var result = connection.Query<int?>(sql: command, param: null);
+
+                return result.Single() == 1;
+            }
+            catch (Exception e)
+            {
+                throw new MetaQueryException(
+                    $"Failed to check existence of login.", e);
+            }
+        }
+
+        /// <summary>
         /// Returns an open SqlConnection
         /// </summary>
         /// <returns></returns>
@@ -365,6 +561,56 @@ namespace moonstone.sql.context
             {
                 throw new OpenConnectionException(
                     $"Failed to open connection.", e);
+            }
+        }
+
+        /// <summary>
+        /// Drops the specified login from the database server
+        /// </summary>
+        /// <param name="username">Username that should be removed</param>
+        public void RemoveLogin(string username)
+        {
+            var command = this.BuildCommand(
+                $"DROP LOGIN {username};", false);
+
+            try
+            {
+                var connection = this.OpenConnection();
+                this.BeginTransaction();
+
+                connection.Query(sql: command, param: null, transaction: this.CurrentTransaction);
+
+                this.CommitTransaction();
+            }
+            catch (Exception e)
+            {
+                this.RollbackTransaction();
+                throw new RemoveLoginException(
+                    $"Failed to remove login.", e);
+            }
+        }
+
+        /// <summary>
+        /// Rolls bakc the current transaction.
+        /// </summary>
+        public void RollbackTransaction()
+        {
+            try
+            {
+                if (this.CurrentTransaction != null)
+                {
+                    this.CurrentTransaction.Rollback();
+                }
+                else
+                {
+                    throw new TransactionNotInitializedException(
+                        $"The transaction was not initialized.");
+                }
+            }
+            catch (Exception e)
+            {
+                throw new RollbackTransactionException(
+                    $"Failed to roll back transaction.", e);
             }
         }
 
@@ -436,121 +682,12 @@ namespace moonstone.sql.context
         }
 
         /// <summary>
-        /// Checks if there is a newer version installed. Throws AddLowerVersionException if
-        /// equal or higher version was found.
-        /// </summary>
-        /// <param name="installedVersionToCheck"></param>
-        protected void CheckVersion(SqlInstalledVersion installedVersionToCheck)
-        {
-            var currentInstalledVersion = this.GetInstalledVersion();
-            if (currentInstalledVersion != null)
-            {
-                var currentVersion = currentInstalledVersion.GetVersion();
-                var versionToCheck = installedVersionToCheck.GetVersion();
-
-                if (currentVersion != null && currentVersion.CompareTo(versionToCheck) >= 0)
-                {
-                    throw new LowerOrEqualVersionException(
-                        $"Attempt to add lower version. Current version is {currentVersion}");
-                }
-            }
-        }
-
-        /// <summary>
-        /// Drops the specified table.
-        /// </summary>
-        /// <param name="tableName">Name of the table</param>
-        /// <param name="useSpecifiedDatabase">If true, the specified database will be used. Otherwise master.</param>
-        public void DropTable(string tableName, bool useSpecifiedDatabase)
-        {
-            var command = this.BuildCommand($"DROP TABLE {tableName}", useSpecifiedDatabase: useSpecifiedDatabase);
-
-            using (var connection = this.OpenConnection())
-            {
-                using (var transaction = connection.BeginTransaction())
-                {
-                    try
-                    {
-                        connection.Query(sql: command, transaction: transaction);
-                        transaction.Commit();
-                    }
-                    catch (Exception e)
-                    {
-                        transaction.Rollback();
-                        throw new DropTableException(
-                            $"Failed to drop table {tableName}", e);
-                    }
-                }
-            }
-        }
-
-        /// <summary>
         /// Returns the name of the version table.
         /// </summary>
         /// <returns></returns>
         public string VersionTableName()
         {
             return VERSION_TABLE;
-        }
-
-        /// <summary>
-        /// Checks if the connection can be opened.
-        /// </summary>
-        /// <returns>True if connection can be opened, otherwise false</returns>
-        public bool CanConnect()
-        {
-            try
-            {
-                this.OpenConnection();
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Begins a new transaction on the current connection
-        /// </summary>
-        public void BeginTransaction()
-        {
-            if (this.CurrentTransaction != null)
-            {
-                throw new TransactionAlreadyInitializedException(
-                    $"Transaction was already initialized");
-            }
-
-            this.CurrentTransaction = this.CurrentConnection.BeginTransaction();
-        }
-
-        /// <summary>
-        /// Commits the current transaction. Rolls back if commit failed.
-        /// </summary>
-        public void CommitTransaction()
-        {
-            if (this.CurrentTransaction == null)
-            {
-                throw new TransactionNotInitializedException(
-                    $"The transaction is not initialized");
-            }
-
-            try
-            {
-                this.CurrentTransaction.Commit();
-            }
-            catch (Exception e)
-            {
-                this.CurrentTransaction.Rollback();
-
-                throw new CommitTransactionException(
-                    $"Failed to commit the transaction", e);
-            }
-            finally
-            {
-                this.CurrentTransaction.Dispose();
-                this.CurrentTransaction = null;
-            }
         }
     }
 }

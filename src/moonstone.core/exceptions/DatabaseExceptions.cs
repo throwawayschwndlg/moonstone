@@ -3,21 +3,41 @@
 namespace moonstone.core.exceptions
 {
     [Serializable]
-    public class InitializeSqlConnectionException : Exception
+    public class AddInstalledVersionException : Exception
     {
-        public InitializeSqlConnectionException()
+        public AddInstalledVersionException()
         {
         }
 
-        public InitializeSqlConnectionException(string message) : base(message)
+        public AddInstalledVersionException(string message) : base(message)
         {
         }
 
-        public InitializeSqlConnectionException(string message, Exception inner) : base(message, inner)
+        public AddInstalledVersionException(string message, Exception inner) : base(message, inner)
         {
         }
 
-        protected InitializeSqlConnectionException(
+        protected AddInstalledVersionException(
+          System.Runtime.Serialization.SerializationInfo info,
+          System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
+    }
+
+    [Serializable]
+    public class CommitTransactionException : Exception
+    {
+        public CommitTransactionException()
+        {
+        }
+
+        public CommitTransactionException(string message) : base(message)
+        {
+        }
+
+        public CommitTransactionException(string message, Exception inner) : base(message, inner)
+        {
+        }
+
+        protected CommitTransactionException(
           System.Runtime.Serialization.SerializationInfo info,
           System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
     }
@@ -43,41 +63,21 @@ namespace moonstone.core.exceptions
     }
 
     [Serializable]
-    public class DropDatabaseException : Exception
+    public class CreateLoginException : Exception
     {
-        public DropDatabaseException()
+        public CreateLoginException()
         {
         }
 
-        public DropDatabaseException(string message) : base(message)
+        public CreateLoginException(string message) : base(message)
         {
         }
 
-        public DropDatabaseException(string message, Exception inner) : base(message, inner)
+        public CreateLoginException(string message, Exception inner) : base(message, inner)
         {
         }
 
-        protected DropDatabaseException(
-          System.Runtime.Serialization.SerializationInfo info,
-          System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
-    }
-
-    [Serializable]
-    public class ReadDatabaseVerionException : Exception
-    {
-        public ReadDatabaseVerionException()
-        {
-        }
-
-        public ReadDatabaseVerionException(string message) : base(message)
-        {
-        }
-
-        public ReadDatabaseVerionException(string message, Exception inner) : base(message, inner)
-        {
-        }
-
-        protected ReadDatabaseVerionException(
+        protected CreateLoginException(
           System.Runtime.Serialization.SerializationInfo info,
           System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
     }
@@ -103,141 +103,21 @@ namespace moonstone.core.exceptions
     }
 
     [Serializable]
-    public class VersionTableAlreadyExistsException : Exception
+    public class DropDatabaseException : Exception
     {
-        public VersionTableAlreadyExistsException()
+        public DropDatabaseException()
         {
         }
 
-        public VersionTableAlreadyExistsException(string message) : base(message)
+        public DropDatabaseException(string message) : base(message)
         {
         }
 
-        public VersionTableAlreadyExistsException(string message, Exception inner) : base(message, inner)
+        public DropDatabaseException(string message, Exception inner) : base(message, inner)
         {
         }
 
-        protected VersionTableAlreadyExistsException(
-          System.Runtime.Serialization.SerializationInfo info,
-          System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
-    }
-
-    [Serializable]
-    public class RetreiveInstalledVersionException : Exception
-    {
-        public RetreiveInstalledVersionException()
-        {
-        }
-
-        public RetreiveInstalledVersionException(string message) : base(message)
-        {
-        }
-
-        public RetreiveInstalledVersionException(string message, Exception inner) : base(message, inner)
-        {
-        }
-
-        protected RetreiveInstalledVersionException(
-          System.Runtime.Serialization.SerializationInfo info,
-          System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
-    }
-
-    [Serializable]
-    public class InitializeDatabaseException : Exception
-    {
-        public InitializeDatabaseException()
-        {
-        }
-
-        public InitializeDatabaseException(string message) : base(message)
-        {
-        }
-
-        public InitializeDatabaseException(string message, Exception inner) : base(message, inner)
-        {
-        }
-
-        protected InitializeDatabaseException(
-          System.Runtime.Serialization.SerializationInfo info,
-          System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
-    }
-
-    [Serializable]
-    public class AddInstalledVersionException : Exception
-    {
-        public AddInstalledVersionException()
-        {
-        }
-
-        public AddInstalledVersionException(string message) : base(message)
-        {
-        }
-
-        public AddInstalledVersionException(string message, Exception inner) : base(message, inner)
-        {
-        }
-
-        protected AddInstalledVersionException(
-          System.Runtime.Serialization.SerializationInfo info,
-          System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
-    }
-
-    [Serializable]
-    public class LowerOrEqualVersionException : Exception
-    {
-        public LowerOrEqualVersionException()
-        {
-        }
-
-        public LowerOrEqualVersionException(string message) : base(message)
-        {
-        }
-
-        public LowerOrEqualVersionException(string message, Exception inner) : base(message, inner)
-        {
-        }
-
-        protected LowerOrEqualVersionException(
-          System.Runtime.Serialization.SerializationInfo info,
-          System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
-    }
-
-    [Serializable]
-    public class ExecuteScriptException : Exception
-    {
-        public ExecuteScriptException()
-        {
-        }
-
-        public ExecuteScriptException(string message) : base(message)
-        {
-        }
-
-        public ExecuteScriptException(string message, Exception inner) : base(message, inner)
-        {
-        }
-
-        protected ExecuteScriptException(
-          System.Runtime.Serialization.SerializationInfo info,
-          System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
-    }
-
-    [Serializable]
-    public class MetaQueryException : Exception
-    {
-        public MetaQueryException()
-        {
-        }
-
-        public MetaQueryException(string message) : base(message)
-        {
-        }
-
-        public MetaQueryException(string message, Exception inner) : base(message, inner)
-        {
-        }
-
-        protected MetaQueryException(
+        protected DropDatabaseException(
           System.Runtime.Serialization.SerializationInfo info,
           System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
     }
@@ -263,6 +143,106 @@ namespace moonstone.core.exceptions
     }
 
     [Serializable]
+    public class ExecuteScriptException : Exception
+    {
+        public ExecuteScriptException()
+        {
+        }
+
+        public ExecuteScriptException(string message) : base(message)
+        {
+        }
+
+        public ExecuteScriptException(string message, Exception inner) : base(message, inner)
+        {
+        }
+
+        protected ExecuteScriptException(
+          System.Runtime.Serialization.SerializationInfo info,
+          System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
+    }
+
+    [Serializable]
+    public class InitializeDatabaseException : Exception
+    {
+        public InitializeDatabaseException()
+        {
+        }
+
+        public InitializeDatabaseException(string message) : base(message)
+        {
+        }
+
+        public InitializeDatabaseException(string message, Exception inner) : base(message, inner)
+        {
+        }
+
+        protected InitializeDatabaseException(
+          System.Runtime.Serialization.SerializationInfo info,
+          System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
+    }
+
+    [Serializable]
+    public class InitializeSqlConnectionException : Exception
+    {
+        public InitializeSqlConnectionException()
+        {
+        }
+
+        public InitializeSqlConnectionException(string message) : base(message)
+        {
+        }
+
+        public InitializeSqlConnectionException(string message, Exception inner) : base(message, inner)
+        {
+        }
+
+        protected InitializeSqlConnectionException(
+          System.Runtime.Serialization.SerializationInfo info,
+          System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
+    }
+
+    [Serializable]
+    public class LowerOrEqualVersionException : Exception
+    {
+        public LowerOrEqualVersionException()
+        {
+        }
+
+        public LowerOrEqualVersionException(string message) : base(message)
+        {
+        }
+
+        public LowerOrEqualVersionException(string message, Exception inner) : base(message, inner)
+        {
+        }
+
+        protected LowerOrEqualVersionException(
+          System.Runtime.Serialization.SerializationInfo info,
+          System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
+    }
+
+    [Serializable]
+    public class MetaQueryException : Exception
+    {
+        public MetaQueryException()
+        {
+        }
+
+        public MetaQueryException(string message) : base(message)
+        {
+        }
+
+        public MetaQueryException(string message, Exception inner) : base(message, inner)
+        {
+        }
+
+        protected MetaQueryException(
+          System.Runtime.Serialization.SerializationInfo info,
+          System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
+    }
+
+    [Serializable]
     public class NoActiveTransactionException : Exception
     {
         public NoActiveTransactionException()
@@ -278,6 +258,106 @@ namespace moonstone.core.exceptions
         }
 
         protected NoActiveTransactionException(
+          System.Runtime.Serialization.SerializationInfo info,
+          System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
+    }
+
+    [Serializable]
+    public class OpenConnectionException : Exception
+    {
+        public OpenConnectionException()
+        {
+        }
+
+        public OpenConnectionException(string message) : base(message)
+        {
+        }
+
+        public OpenConnectionException(string message, Exception inner) : base(message, inner)
+        {
+        }
+
+        protected OpenConnectionException(
+          System.Runtime.Serialization.SerializationInfo info,
+          System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
+    }
+
+    [Serializable]
+    public class ReadDatabaseVerionException : Exception
+    {
+        public ReadDatabaseVerionException()
+        {
+        }
+
+        public ReadDatabaseVerionException(string message) : base(message)
+        {
+        }
+
+        public ReadDatabaseVerionException(string message, Exception inner) : base(message, inner)
+        {
+        }
+
+        protected ReadDatabaseVerionException(
+          System.Runtime.Serialization.SerializationInfo info,
+          System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
+    }
+
+    [Serializable]
+    public class RemoveLoginException : Exception
+    {
+        public RemoveLoginException()
+        {
+        }
+
+        public RemoveLoginException(string message) : base(message)
+        {
+        }
+
+        public RemoveLoginException(string message, Exception inner) : base(message, inner)
+        {
+        }
+
+        protected RemoveLoginException(
+          System.Runtime.Serialization.SerializationInfo info,
+          System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
+    }
+
+    [Serializable]
+    public class RetreiveInstalledVersionException : Exception
+    {
+        public RetreiveInstalledVersionException()
+        {
+        }
+
+        public RetreiveInstalledVersionException(string message) : base(message)
+        {
+        }
+
+        public RetreiveInstalledVersionException(string message, Exception inner) : base(message, inner)
+        {
+        }
+
+        protected RetreiveInstalledVersionException(
+          System.Runtime.Serialization.SerializationInfo info,
+          System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
+    }
+
+    [Serializable]
+    public class RollbackTransactionException : Exception
+    {
+        public RollbackTransactionException()
+        {
+        }
+
+        public RollbackTransactionException(string message) : base(message)
+        {
+        }
+
+        public RollbackTransactionException(string message, Exception inner) : base(message, inner)
+        {
+        }
+
+        protected RollbackTransactionException(
           System.Runtime.Serialization.SerializationInfo info,
           System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
     }
@@ -343,41 +423,21 @@ namespace moonstone.core.exceptions
     }
 
     [Serializable]
-    public class CommitTransactionException : Exception
+    public class VersionTableAlreadyExistsException : Exception
     {
-        public CommitTransactionException()
+        public VersionTableAlreadyExistsException()
         {
         }
 
-        public CommitTransactionException(string message) : base(message)
+        public VersionTableAlreadyExistsException(string message) : base(message)
         {
         }
 
-        public CommitTransactionException(string message, Exception inner) : base(message, inner)
+        public VersionTableAlreadyExistsException(string message, Exception inner) : base(message, inner)
         {
         }
 
-        protected CommitTransactionException(
-          System.Runtime.Serialization.SerializationInfo info,
-          System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
-    }
-
-    [Serializable]
-    public class OpenConnectionException : Exception
-    {
-        public OpenConnectionException()
-        {
-        }
-
-        public OpenConnectionException(string message) : base(message)
-        {
-        }
-
-        public OpenConnectionException(string message, Exception inner) : base(message, inner)
-        {
-        }
-
-        protected OpenConnectionException(
+        protected VersionTableAlreadyExistsException(
           System.Runtime.Serialization.SerializationInfo info,
           System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
     }

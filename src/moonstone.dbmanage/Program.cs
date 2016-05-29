@@ -33,24 +33,6 @@ namespace moonstone.dbmanage
 
         protected static string Server { get; set; }
 
-        private static SqlContext GetContext()
-        {
-            return new SqlContext(Database, Server, integratedSecurity: true);
-        }
-
-        private static void Main(string[] args)
-        {
-            PrintSeparator();
-            Console.WriteLine("Type help after connecting to see the list of available commands");
-            PrintSeparator();
-            Console.WriteLine();
-
-            RequestConnectionDetails();
-            PrintInfo();
-
-            ActionLoop();
-        }
-
         private static void ActionLoop()
         {
             var action = RequestAction();
@@ -106,44 +88,31 @@ namespace moonstone.dbmanage
             ActionLoop();
         }
 
-        private static void PrintHelp()
-        {
-            Console.WriteLine("Available commands (including aliases):");
-            foreach (var name in Enum.GetNames(typeof(Action)).OrderBy(n => n))
-            {
-                Console.WriteLine($"{name.ToLower()}");
-            }
-        }
-
-        private static void PrintExists()
+        private static void Drop()
         {
             var context = GetContext();
-            Console.WriteLine(context.Exists());
-        }
 
-        private static void RequestConnectionDetails()
-        {
-            Console.Write("Enter Server address: ");
-            Server = Console.ReadLine();
-
-            Console.Write("Enter DB Name: ");
-            Database = Console.ReadLine();
-        }
-
-        private static Action RequestAction()
-        {
-            string action = Console.ReadLine();
-
-            foreach (var name in Enum.GetNames(typeof(Action)))
+            try
             {
-                if (action.Trim().ToLower() == name.ToLower())
+                if (context.Exists())
                 {
-                    return (Action)Enum.Parse(typeof(Action), name);
+                    context.Drop();
+                    Console.WriteLine($"Database dropped.");
+                }
+                else
+                {
+                    Console.WriteLine($"Database does not exists.");
                 }
             }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Failed to drop database: {e.Message}");
+            }
+        }
 
-            Console.WriteLine("Invalid action.");
-            return RequestAction();
+        private static SqlContext GetContext()
+        {
+            return new SqlContext(Database, Server);
         }
 
         private static void Init()
@@ -168,26 +137,89 @@ namespace moonstone.dbmanage
             }
         }
 
-        private static void Drop()
+        private static void Main(string[] args)
+        {
+            PrintSeparator();
+            Console.WriteLine("Type help after connecting to see the list of available commands");
+            PrintSeparator();
+            Console.WriteLine();
+
+            RequestConnectionDetails();
+            PrintInfo();
+
+            ActionLoop();
+        }
+
+        private static void PrintExists()
         {
             var context = GetContext();
+            Console.WriteLine(context.Exists());
+        }
 
-            try
+        private static void PrintHelp()
+        {
+            Console.WriteLine("Available commands (including aliases):");
+            foreach (var name in Enum.GetNames(typeof(Action)).OrderBy(n => n))
             {
+                Console.WriteLine($"{name.ToLower()}");
+            }
+        }
+
+        private static void PrintInfo()
+        {
+            PrintSeparator();
+            Console.WriteLine("Connection info:");
+            PrintSeparator();
+
+            var context = GetContext();
+
+            Console.WriteLine($"Server: {context.ServerAddress}");
+            Console.WriteLine($"Database: {context.DatabaseName}");
+
+            if (context.CanConnect())
+            {
+                Console.WriteLine("+ Can connect to server");
                 if (context.Exists())
                 {
-                    context.Drop();
-                    Console.WriteLine($"Database dropped.");
+                    Console.WriteLine($"+ Database exists");
+                    if (context.VersionTableExists())
+                    {
+                        Console.WriteLine($"+ Version table exists");
+                        var currentVersion = context.GetInstalledVersion();
+                        if (currentVersion != null)
+                        {
+                            Console.WriteLine($"+ Current version is {currentVersion}");
+                        }
+                        else
+                        {
+                            Console.WriteLine($"- No version found");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine($"- Version table does not exist");
+                    }
                 }
                 else
                 {
-                    Console.WriteLine($"Database does not exists.");
+                    Console.WriteLine("- Database does not exist");
                 }
             }
-            catch (Exception e)
+            else
             {
-                Console.WriteLine($"Failed to drop database: {e.Message}");
+                Console.WriteLine($"- Can not connect to server");
             }
+
+            PrintSeparator();
+        }
+
+        private static void PrintSeparator()
+        {
+            for (int i = 0; i < Console.BufferWidth / 2; i++)
+            {
+                Console.Write("-");
+            }
+            Console.WriteLine();
         }
 
         private static void PrintVersion()
@@ -207,6 +239,53 @@ namespace moonstone.dbmanage
             catch (Exception e)
             {
                 Console.WriteLine($"Failed to get version: {e.Message}");
+            }
+        }
+
+        private static Action RequestAction()
+        {
+            string action = Console.ReadLine();
+
+            foreach (var name in Enum.GetNames(typeof(Action)))
+            {
+                if (action.Trim().ToLower() == name.ToLower())
+                {
+                    return (Action)Enum.Parse(typeof(Action), name);
+                }
+            }
+
+            Console.WriteLine("Invalid action.");
+            return RequestAction();
+        }
+
+        private static void RequestConnectionDetails()
+        {
+            Console.Write("Enter Server address: ");
+            Server = Console.ReadLine();
+
+            Console.Write("Enter DB Name: ");
+            Database = Console.ReadLine();
+        }
+
+        private static bool RequestContinueConfirmation()
+        {
+            Console.Write("Continue? (yes/no) ");
+            var inputContinue = Console.ReadLine().Trim().ToLower();
+            return (inputContinue == "yes" || inputContinue == "y");
+        }
+
+        private static DirectoryInfo RequestDirectory()
+        {
+            Console.Write($"Directory: ");
+            string path = Console.ReadLine();
+            if (Directory.Exists(path))
+            {
+                return new DirectoryInfo(path);
+            }
+            else
+            {
+                Console.WriteLine($"Invalid directory");
+                return RequestDirectory();
             }
         }
 
@@ -282,85 +361,6 @@ namespace moonstone.dbmanage
 
                 Console.WriteLine($"Update completed successfully. Current version is: {context.GetInstalledVersion()}");
             }
-        }
-
-        private static DirectoryInfo RequestDirectory()
-        {
-            Console.Write($"Directory: ");
-            string path = Console.ReadLine();
-            if (Directory.Exists(path))
-            {
-                return new DirectoryInfo(path);
-            }
-            else
-            {
-                Console.WriteLine($"Invalid directory");
-                return RequestDirectory();
-            }
-        }
-
-        private static void PrintInfo()
-        {
-            PrintSeparator();
-            Console.WriteLine("Connection info:");
-            PrintSeparator();
-
-            var context = GetContext();
-
-            Console.WriteLine($"Server: {context.ServerAddress}");
-            Console.WriteLine($"Database: {context.DatabaseName}");
-
-            if (context.CanConnect())
-            {
-                Console.WriteLine("+ Can connect to server");
-                if (context.Exists())
-                {
-                    Console.WriteLine($"+ Database exists");
-                    if (context.VersionTableExists())
-                    {
-                        Console.WriteLine($"+ Version table exists");
-                        var currentVersion = context.GetInstalledVersion();
-                        if (currentVersion != null)
-                        {
-                            Console.WriteLine($"+ Current version is {currentVersion}");
-                        }
-                        else
-                        {
-                            Console.WriteLine($"- No version found");
-                        }
-                    }
-                    else
-                    {
-                        Console.WriteLine($"- Version table does not exist");
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("- Database does not exist");
-                }
-            }
-            else
-            {
-                Console.WriteLine($"- Can not connect to server");
-            }
-
-            PrintSeparator();
-        }
-
-        private static void PrintSeparator()
-        {
-            for (int i = 0; i < Console.BufferWidth / 2; i++)
-            {
-                Console.Write("-");
-            }
-            Console.WriteLine();
-        }
-
-        private static bool RequestContinueConfirmation()
-        {
-            Console.Write("Continue? (yes/no) ");
-            var inputContinue = Console.ReadLine().Trim().ToLower();
-            return (inputContinue == "yes" || inputContinue == "y");
         }
     }
 }
