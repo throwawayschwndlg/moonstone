@@ -96,7 +96,7 @@ namespace moonstone.dbmanage
             {
                 if (context.Exists())
                 {
-                    context.Drop();
+                    context.DropDatabase();
                     Console.WriteLine($"Database dropped.");
                 }
                 else
@@ -163,6 +163,7 @@ namespace moonstone.dbmanage
             {
                 Console.WriteLine($"{name.ToLower()}");
             }
+            Console.WriteLine();
         }
 
         private static void PrintInfo()

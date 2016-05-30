@@ -143,6 +143,26 @@ namespace moonstone.core.exceptions
     }
 
     [Serializable]
+    public class ExecuteQueryException : Exception
+    {
+        public ExecuteQueryException()
+        {
+        }
+
+        public ExecuteQueryException(string message) : base(message)
+        {
+        }
+
+        public ExecuteQueryException(string message, Exception inner) : base(message, inner)
+        {
+        }
+
+        protected ExecuteQueryException(
+          System.Runtime.Serialization.SerializationInfo info,
+          System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
+    }
+
+    [Serializable]
     public class ExecuteScriptException : Exception
     {
         public ExecuteScriptException()

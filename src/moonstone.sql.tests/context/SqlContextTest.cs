@@ -107,12 +107,12 @@ namespace moonstone.sql.test.context
             var validContext = GetValidContext();
             if (validContext.Exists())
             {
-                validContext.Drop();
+                validContext.DropDatabase();
             }
 
             try
             {
-                validContext.Create();
+                validContext.CreateDatabase();
                 Assert.IsTrue(validContext.Exists());
             }
             catch (Exception e)
@@ -147,7 +147,7 @@ namespace moonstone.sql.test.context
             var validContext = GetValidContext();
             try
             {
-                validContext.Drop();
+                validContext.DropDatabase();
                 Assert.IsFalse(validContext.Exists());
             }
             catch (Exception e)
@@ -165,7 +165,7 @@ namespace moonstone.sql.test.context
             bool existsAfterDrop;
 
             existsBeforeDrop = initializedContext.VersionTableExists();
-            initializedContext.DropTable(initializedContext.VersionTableName(), useSpecifiedDatabase: true);
+            initializedContext.DropTable(initializedContext.GetVersionTableName(), useSpecifiedDatabase: true);
             existsAfterDrop = initializedContext.VersionTableExists();
 
             Assert.IsTrue(existsBeforeDrop);
@@ -339,7 +339,7 @@ namespace moonstone.sql.test.context
         {
             var initializedContext = GetInitializedContext();
 
-            bool exists = initializedContext.TableExists(initializedContext.VersionTableName(), true);
+            bool exists = initializedContext.TableExists(initializedContext.GetVersionTableName(), true);
 
             Assert.IsTrue(exists);
         }
@@ -436,7 +436,7 @@ namespace moonstone.sql.test.context
         public void Can_Return_Version_Table_Name()
         {
             var initializedContext = GetInitializedContext();
-            var versionTableName = initializedContext.VersionTableName();
+            var versionTableName = initializedContext.GetVersionTableName();
 
             Assert.AreEqual("db_version", versionTableName);
         }
@@ -513,7 +513,7 @@ namespace moonstone.sql.test.context
             var validContext = GetValidContext();
             if (validContext.Exists())
             {
-                validContext.Drop();
+                validContext.DropDatabase();
             }
 
             Assert.IsFalse(validContext.Exists());
@@ -525,7 +525,7 @@ namespace moonstone.sql.test.context
             var validContext = GetValidContext();
             if (validContext.Exists())
             {
-                validContext.Drop();
+                validContext.DropDatabase();
             }
 
             Assert.IsFalse(validContext.Exists());
@@ -541,7 +541,7 @@ namespace moonstone.sql.test.context
             var validContext = GetValidContext();
             if (validContext.Exists())
             {
-                validContext.Drop();
+                validContext.DropDatabase();
             }
 
             Assert.IsFalse(validContext.VersionTableExists());
@@ -557,7 +557,7 @@ namespace moonstone.sql.test.context
             var validContext = GetValidContext();
             if (validContext.Exists())
             {
-                validContext.Drop();
+                validContext.DropDatabase();
             }
 
             Assert.IsFalse(validContext.Exists());
@@ -627,9 +627,9 @@ namespace moonstone.sql.test.context
             var validContext = GetValidContext();
             if (validContext.Exists())
             {
-                validContext.Drop();
+                validContext.DropDatabase();
             }
-            validContext.Create();
+            validContext.CreateDatabase();
         }
 
         [TearDown]
@@ -638,7 +638,7 @@ namespace moonstone.sql.test.context
             var validContext = GetValidContext();
             if (validContext.Exists())
             {
-                validContext.Drop();
+                validContext.DropDatabase();
             }
         }
     }

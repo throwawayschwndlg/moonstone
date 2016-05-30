@@ -1,17 +1,18 @@
 ﻿using moonstone.core.data;
 using moonstone.core.repositories;
 using moonstone.sql.context;
+using System;
 
 namespace moonstone.sql.context
 {
     public class SqlUnitOfWork : IUnitOfWork
     {
+        public IUserRepository UserRepository { get; set; }
+
         protected SqlContext Context
         {
             get; set;
         }
-
-        public IUserRepository UserRepository { get; set; }
 
         public SqlUnitOfWork(SqlContext context, IUserRepository userRepo)
         {
@@ -21,12 +22,12 @@ namespace moonstone.sql.context
 
         public void Begin()
         {
-            this.Context.BeginTransaction();
+            throw new NotImplementedException();
         }
 
         public void Commit()
         {
-            this.Context.CommitTransaction();
+            throw new NotImplementedException();
         }
     }
 }
