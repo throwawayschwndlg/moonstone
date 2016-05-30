@@ -8,6 +8,12 @@ using System.Linq;
 
 namespace moonstone.sql.context
 {
+    public enum CommandMode
+    {
+        Read,
+        Write
+    }
+
     public class SqlContext
     {
         private const string VERSION_TABLE = "db_version";
@@ -74,7 +80,7 @@ namespace moonstone.sql.context
         /// Adds a record to the version table
         /// </summary>
         /// <param name="version">InstalledVersion to add</param>
-        public void AddInstalledVersion(SqlInstalledVersion version, bool createNewTransaction = true)
+        public void AddInstalledVersion(SqlInstalledVersion version)
         {
             this.CheckVersion(version);
 
@@ -556,6 +562,62 @@ namespace moonstone.sql.context
                 throw new RemoveLoginException(
                     $"Failed to remove login.", e);
             }
+        }
+
+        public IEnumerable<TReturn> RunCommand<TReturn>(string command, object param, CommandMode mode)
+        {
+            SqlConnection connection = null;
+            SqlTransaction transaction = null;
+
+            command = this.BuildCommand(command, useSpecifiedDatabase: true);
+
+            try
+            {
+                connection = this.OpenConnection();
+                if (mode == CommandMode.Write)
+                {
+                    transaction = connection.BeginTransaction();
+                }
+
+                var result = connection.Query<TReturn>(
+                    sql: command,
+                    param: param,
+                    transaction: mode == CommandMode.Write ? transaction : null
+                    );
+
+                if (mode == CommandMode.Write)
+                {
+                    transaction.Commit();
+                }
+
+                return result;
+            }
+            catch (Exception e)
+            {
+                if (mode == CommandMode.Write && transaction != null)
+                {
+                    transaction.Rollback();
+                }
+
+                throw new QueryException(
+                    $"Failed to execute query.", e);
+            }
+            finally
+            {
+                if (connection != null)
+                {
+                    if (mode == CommandMode.Write && transaction != null)
+                    {
+                        transaction.Dispose();
+                    }
+                    connection.Dispose();
+                }
+            }
+        }
+
+        public void RunCommand(string command, object param, CommandMode mode)
+        {
+            this.RunCommand<dynamic>(command: command, param: param, mode: mode);
         }
 
         /// <summary>

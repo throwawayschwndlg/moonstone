@@ -7,11 +7,6 @@ namespace moonstone.sql.repositories
 {
     public class SqlUserRepository : SqlBaseRepository, IUserRepository
     {
-        public SqlUserRepository(SqlContext context)
-            : base(context)
-        {
-        }
-
         public User GetByEmail(string email)
         {
             throw new NotImplementedException();

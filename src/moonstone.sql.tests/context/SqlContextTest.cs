@@ -3,6 +3,7 @@ using moonstone.core.exceptions;
 using moonstone.sql.context;
 using NUnit.Framework;
 using System;
+using System.Linq;
 
 namespace moonstone.sql.test.context
 {
@@ -442,6 +443,28 @@ namespace moonstone.sql.test.context
         }
 
         [Test]
+        public void Can_Roll_Back_Command()
+        {
+            var initializedContext = GetInitializedContext();
+
+            try
+            {
+                var command = $@"
+                CREATE TABLE ttt(id int not null, PRIMARY KEY(id));
+                INSERT INTO ttt VALUES ('one');";
+
+                initializedContext.RunCommand<dynamic>(command: command, param: null, mode: CommandMode.Write);
+            }
+            catch
+            {
+                Assert.That(!initializedContext.TableExists("ttt", useSpecifiedDatabase: true));
+                return;
+            }
+
+            Assert.Fail("should not get here");
+        }
+
+        [Test]
         public void Can_Run_Multiple_Queries()
         {
             var validContext = GetValidContext();
@@ -455,6 +478,80 @@ namespace moonstone.sql.test.context
             {
                 Assert.Fail(e.ToString());
             }
+        }
+
+        [Test]
+        public void Can_Run_Read_Command()
+        {
+            var initializedContext = GetInitializedContext();
+            string command = $"SELECT * FROM {initializedContext.GetVersionTableName()};";
+
+            var result = initializedContext.RunCommand<SqlInstalledVersion>(command: command, param: null, mode: CommandMode.Read);
+
+            Assert.That(result.Count() >= 1);
+        }
+
+        [Test]
+        public void Can_Run_Read_Command_With_Param()
+        {
+            var initializedContext = GetInitializedContext();
+
+            initializedContext.AddInstalledVersion(new SqlInstalledVersion(1, 2, 3, DateTime.UtcNow));
+            initializedContext.AddInstalledVersion(new SqlInstalledVersion(2, 2, 3, DateTime.UtcNow));
+            initializedContext.AddInstalledVersion(new SqlInstalledVersion(3, 2, 3, DateTime.UtcNow));
+            initializedContext.AddInstalledVersion(new SqlInstalledVersion(4, 2, 3, DateTime.UtcNow));
+
+            var command = $"SELECT * FROM {initializedContext.GetVersionTableName()} WHERE major > @major";
+            var param = new { major = 2 };
+
+            var result = initializedContext.RunCommand<SqlInstalledVersion>(command: command, param: param, mode: CommandMode.Read);
+
+            Assert.That(result.Count() == 2);
+        }
+
+        [Test]
+        public void Can_Run_Write_Command()
+        {
+            var validContext = GetValidContext();
+            string command =
+                $@"CREATE TABLE animals(
+                    id int not null,
+                    [name] nvarchar(128) not null,
+                    PRIMARY KEY(id)
+                );
+
+                INSERT INTO animals (id, [name])
+                VALUES
+                    (1, 'snake'),
+                    (2, 'zebra'),
+                    (3, 'cat'),
+                    (4, 'nessie')";
+
+            validContext.RunCommand<dynamic>(command, param: null, mode: CommandMode.Write);
+
+            Assert.That(validContext.TableExists("animals", useSpecifiedDatabase: true));
+        }
+
+        [Test]
+        public void Can_Run_Write_Command_With_Param()
+        {
+            var initializedContext = GetInitializedContext();
+
+            var command = @"
+                CREATE TABLE mycats(id int not null, [name] nvarchar(max) not null, PRIMARY KEY(id));
+                INSERT INTO mycats(id, [name]) VALUES (@idFuchur, @nameFuchur), (@idFenja, @nameFenja);
+                SELECT * FROM mycats;";
+            var param = new { idFuchur = 1, nameFuchur = "Fuchur the Devil", idFenja = 2, nameFenja = "Fenja the Goddess of sleep" };
+
+            var result = initializedContext.RunCommand<dynamic>(command: command, param: param, mode: CommandMode.Write);
+
+            var dataFuchur = result.ElementAt(0);
+            var dataFenja = result.ElementAt(1);
+
+            Assert.AreEqual(dataFuchur.id, 1);
+            Assert.AreEqual(dataFuchur.name, "Fuchur the Devil");
+            Assert.AreEqual(dataFenja.id, 2);
+            Assert.AreEqual(dataFenja.name, "Fenja the Goddess of sleep");
         }
 
         [Test]
@@ -600,7 +697,7 @@ namespace moonstone.sql.test.context
         public void Returns_True_If_Login_Exists()
         {
             var validContext = GetValidContext();
-            string username = Guid.NewGuid().ToString().Substring(0, 8);
+            string username = $"user_{Guid.NewGuid().ToString().Substring(0, 8)}";
             string password = Guid.NewGuid().ToString();
 
             validContext.CreateLogin(username, password);
