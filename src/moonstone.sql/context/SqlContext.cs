@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Text;
 
 namespace moonstone.sql.context
 {
@@ -120,6 +121,7 @@ namespace moonstone.sql.context
         public string BuildCommand(string command, bool useSpecifiedDatabase)
         {
             string dbToUse = useSpecifiedDatabase ? this.DatabaseName : "master";
+            command = this.ReplacePlaceholders(command);
 
             return $"USE {dbToUse}; {command}";
         }
@@ -699,6 +701,21 @@ namespace moonstone.sql.context
                 revision = version.Revision,
                 installDateUtc = version.InstallDateUtc
             };
+
+            return command;
+        }
+
+        protected string ReplacePlaceholders(string command)
+        {
+            var placeholders = new Dictionary<string, string>()
+            {
+                { "::db::", this.DatabaseName }
+            };
+
+            foreach (var placeholder in placeholders)
+            {
+                command = command.Replace(placeholder.Key, placeholder.Value);
+            }
 
             return command;
         }
