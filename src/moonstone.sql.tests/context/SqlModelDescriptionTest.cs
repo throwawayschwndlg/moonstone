@@ -29,7 +29,7 @@ namespace moonstone.sql.tests.context
         [Test]
         public void Auto_Ignores_ReadOnly_Properties()
         {
-            var description = SqlModelDescription<Cat>.Auto("cats");
+            var description = SqlModelDescription<Cat>.Auto("schema", "cats");
 
             description.Property(p => p.IsGrumpy).Should().BeNull();
         }
@@ -37,7 +37,7 @@ namespace moonstone.sql.tests.context
         [Test]
         public void Auto_Registers_Inherited_Property()
         {
-            var description = SqlModelDescription<Cat>.Auto("cats");
+            var description = SqlModelDescription<Cat>.Auto("schema", "cats");
 
             description.Property(c => c.Id).Should().NotBeNull();
             description.Property(c => c.Name).Should().NotBeNull();
@@ -46,7 +46,7 @@ namespace moonstone.sql.tests.context
         [Test]
         public void Auto_Registers_Simple_Property()
         {
-            var description = SqlModelDescription<Cat>.Auto("cats");
+            var description = SqlModelDescription<Cat>.Auto("core", "cats");
 
             description.Property(c => c.Title).Should().NotBeNull();
         }
@@ -54,7 +54,7 @@ namespace moonstone.sql.tests.context
         [Test]
         public void GetProperty_Finds_Property()
         {
-            var description = SqlModelDescription<Cat>.Auto("cats");
+            var description = SqlModelDescription<Cat>.Auto("core", "cats");
 
             description.Property(p => p.Name).Should().NotBeNull();
         }

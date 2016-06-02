@@ -518,11 +518,12 @@ namespace moonstone.sql.context
                 var fieldNames = propertiesForInsert.Select(p => $"[{p.FieldName}]");
                 var propertyNames = propertiesForInsert.Select(p => $"@{p.PropertyName}");
 
-                string baseCommand =
-                    $"INSERT INTO {modelDescription.Table} ({string.Join(", ", fieldNames)}) "
+                string command =
+                    $"INSERT INTO [{modelDescription.Schema}].[{modelDescription.Table}] ({string.Join(", ", fieldNames)}) "
+                    + $"OUTPUT inserted.Id " // todo: this will break as soon as we have an pk-column which isn't named 'id'
                     + $"VALUES ({string.Join(", ", propertyNames)});";
 
-                return this.BuildCommand(baseCommand, useSpecifiedDatabase: true);
+                return command;
             }
             else
             {
@@ -587,6 +588,11 @@ namespace moonstone.sql.context
             return connection;
         }
 
+        /// <summary>
+        /// Registers the specified model description.
+        /// </summary>
+        /// <typeparam name="T">Type of the model</typeparam>
+        /// <param name="modelDescription">The actual model description</param>
         public void RegisterModelDescription<T>(SqlModelDescription<T> modelDescription)
         {
             if (this.GetModelDescription<T>() == null)
@@ -717,18 +723,17 @@ namespace moonstone.sql.context
             {
                 var properties = modelDescription.Properties();
 
-                var baseCommand =
-                    $@"SELECT * FROM {modelDescription.Table}";
+                var command =
+                    $@"SELECT * FROM [{modelDescription.Schema}].[{modelDescription.Table}]";
 
                 if (!string.IsNullOrWhiteSpace(whereClause))
                 {
-                    baseCommand = $"{baseCommand} WHERE {whereClause}";
+                    command = $"{command} WHERE {whereClause}";
                 }
 
-                baseCommand += ";";
+                command += ";";
 
-                return this.BuildCommand(baseCommand, useSpecifiedDatabase: true);
-                /* ({string.Join(";", properties.Select(p => p.FieldName))}*/
+                return command;
             }
             else
             {

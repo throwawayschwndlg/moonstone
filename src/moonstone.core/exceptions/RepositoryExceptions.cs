@@ -27,21 +27,21 @@ namespace moonstone.core.exceptions
     }
 
     [Serializable]
-    public class QueryUserException : Exception
+    public class QueryUsersException : Exception
     {
-        public QueryUserException()
+        public QueryUsersException()
         {
         }
 
-        public QueryUserException(string message) : base(message)
+        public QueryUsersException(string message) : base(message)
         {
         }
 
-        public QueryUserException(string message, Exception inner) : base(message, inner)
+        public QueryUsersException(string message, Exception inner) : base(message, inner)
         {
         }
 
-        protected QueryUserException(
+        protected QueryUsersException(
           System.Runtime.Serialization.SerializationInfo info,
           System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
     }

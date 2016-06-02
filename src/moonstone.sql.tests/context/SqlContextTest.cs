@@ -621,8 +621,8 @@ namespace moonstone.sql.test.context
         {
             var validContext = GetValidContext();
 
-            var descriptionTypeA = SqlModelDescription<TypeA>.Auto("typeAs");
-            var descriptionTypeB = SqlModelDescription<TypeB>.Auto("typeBs");
+            var descriptionTypeA = SqlModelDescription<TypeA>.Auto("core", "typeAs");
+            var descriptionTypeB = SqlModelDescription<TypeB>.Auto("core", "typeBs");
 
             validContext.RegisterModelDescription(descriptionTypeA);
             validContext.RegisterModelDescription(descriptionTypeB);
@@ -667,13 +667,14 @@ namespace moonstone.sql.test.context
         public void InsertCommand_Can_Build_Command()
         {
             string tableName = "typeCs";
+            string schema = "core";
 
             var validContext = GetValidContext();
-            validContext.RegisterModelDescription(SqlModelDescription<TypeC>.Auto(tableName));
+            validContext.RegisterModelDescription(SqlModelDescription<TypeC>.Auto(schema, tableName));
 
             string command = validContext.InsertCommand<TypeC>();
 
-            command.Should().Be($"USE {DATABASE_NAME}; INSERT INTO {tableName} ([integer], [name]) VALUES (@Integer, @Name);");
+            command.Should().Be($"INSERT INTO [{schema}].[{tableName}] ([integer], [name]) OUTPUT inserted.Id VALUES (@Integer, @Name);");
         }
 
         [Test]
@@ -681,10 +682,10 @@ namespace moonstone.sql.test.context
         {
             var validContext = GetValidContext();
 
-            validContext.RegisterModelDescription(SqlModelDescription<TypeA>.Auto("typeA"));
+            validContext.RegisterModelDescription(SqlModelDescription<TypeA>.Auto("schema", "typeA"));
 
             Assert.Throws<TypeAlreadyRegisteredException>(
-                () => validContext.RegisterModelDescription(SqlModelDescription<TypeA>.Auto("typeA")));
+                () => validContext.RegisterModelDescription(SqlModelDescription<TypeA>.Auto("schema", "typeA")));
         }
 
         [Test]
@@ -692,8 +693,8 @@ namespace moonstone.sql.test.context
         {
             var validContext = GetValidContext();
 
-            validContext.RegisterModelDescription(SqlModelDescription<TypeA>.Auto("typeA"));
-            validContext.RegisterModelDescription(SqlModelDescription<TypeB>.Auto("typeB"));
+            validContext.RegisterModelDescription(SqlModelDescription<TypeA>.Auto("schema", "typeA"));
+            validContext.RegisterModelDescription(SqlModelDescription<TypeB>.Auto("schema", "typeB"));
 
             validContext.GetModelDescription<TypeA>().Should().NotBeNull();
             validContext.GetModelDescription<TypeB>().Should().NotBeNull();
@@ -704,7 +705,7 @@ namespace moonstone.sql.test.context
         {
             var validContext = GetValidContext();
 
-            validContext.RegisterModelDescription(SqlModelDescription<TypeA>.Auto("typeA"));
+            validContext.RegisterModelDescription(SqlModelDescription<TypeA>.Auto("schema", "typeA"));
 
             validContext.GetModelDescription<TypeA>().Should().NotBeNull();
         }
@@ -782,27 +783,29 @@ namespace moonstone.sql.test.context
         [Test]
         public void SelectCommand_Can_Build_Command()
         {
+            string schema = "core";
             string tableName = "typeCs";
 
             var validContext = GetValidContext();
-            validContext.RegisterModelDescription(SqlModelDescription<TypeC>.Auto(tableName));
+            validContext.RegisterModelDescription(SqlModelDescription<TypeC>.Auto(schema, tableName));
 
             string command = validContext.SelectCommand<TypeC>();
 
-            command.Should().Be($"USE {DATABASE_NAME}; SELECT * FROM {tableName};");
+            command.Should().Be($"SELECT * FROM [{schema}].[{tableName}];");
         }
 
         [Test]
         public void SelectCommand_Can_Build_Command_With_Where_Clause()
         {
+            string schema = "core";
             string tableName = "typeCs";
 
             var validContext = GetValidContext();
-            validContext.RegisterModelDescription(SqlModelDescription<TypeC>.Auto(tableName));
+            validContext.RegisterModelDescription(SqlModelDescription<TypeC>.Auto(schema, tableName));
 
             string command = validContext.SelectCommand<TypeC>("Id = @Id");
 
-            command.Should().Be($"USE {DATABASE_NAME}; SELECT * FROM {tableName} WHERE Id = @Id;");
+            command.Should().Be($"SELECT * FROM [{schema}].[{tableName}] WHERE Id = @Id;");
         }
 
         [Test]

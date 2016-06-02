@@ -5,7 +5,7 @@ namespace moonstone.core.repositories
 {
     public interface IUserRepository
     {
-        void Create(User user);
+        Guid Create(User user);
 
         User GetByEmail(string email);
 

@@ -14,12 +14,12 @@ namespace moonstone.sql.repositories
         {
         }
 
-        public void Create(User user)
+        public Guid Create(User user)
         {
             try
             {
-                var command =
-                    $"INSERT INTO {this.Context.GetUsersTableName()}";
+                return this.Context.RunCommand<Guid>(
+                    command: this.Context.InsertCommand<User>(), param: user, mode: CommandMode.Write).SingleOrDefault();
             }
             catch (Exception e)
             {
@@ -32,26 +32,36 @@ namespace moonstone.sql.repositories
         {
             try
             {
-                var command =
-                    $"SELECT * FROM {this.Context.GetUsersTableName()} WHERE email = @email;";
-
-                var result = this.Context.RunCommand<User>(
+                var command = this.Context.SelectCommand<User>($"email = @email");
+                return this.Context.RunCommand<User>(
                     command: command,
                     param: new { email = email },
-                    mode: CommandMode.Read);
-
-                return result.SingleOrDefault();
+                    mode: CommandMode.Read).SingleOrDefault();
             }
             catch (Exception e)
             {
-                throw new QueryUserException(
-                    $"Failed to get user by email.", e);
+                throw new QueryUsersException(
+                    $"Failed to get user by email {email}", e);
+                throw;
             }
         }
 
         public User GetById(Guid id)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var command = this.Context.SelectCommand<User>($"id = @id");
+                return this.Context.RunCommand<User>(
+                    command: command,
+                    param: new { id = id },
+                    mode: CommandMode.Read).SingleOrDefault();
+            }
+            catch (Exception e)
+            {
+                throw new QueryUsersException(
+                    $"Failed to get user by Id {id}", e);
+                throw;
+            }
         }
     }
 }

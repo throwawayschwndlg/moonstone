@@ -12,20 +12,23 @@ namespace moonstone.sql.context
 
     public class SqlModelDescription<T> : SqlModelDescription
     {
+        public string Schema { get; set; }
+
         public string Table { get; set; }
 
         public Type Type { get; set; }
 
         protected ICollection<SqlPropertyDescription> PropertyDescriptions { get; set; }
 
-        public SqlModelDescription(Type type, string table)
+        public SqlModelDescription(Type type, string schema, string table)
         {
             this.Type = type;
+            this.Schema = schema;
             this.Table = table;
             this.PropertyDescriptions = new List<SqlPropertyDescription>();
         }
 
-        public static SqlModelDescription<T> Auto(string table)
+        public static SqlModelDescription<T> Auto(string schema, string table)
         {
             var ignore_insert_fields = new string[] { "id" };
             var ignore_update_fields = new string[] { "id" };
@@ -33,7 +36,7 @@ namespace moonstone.sql.context
             var type = typeof(T);
             var properties = type.GetProperties();
 
-            var modelDescription = new SqlModelDescription<T>(type, table);
+            var modelDescription = new SqlModelDescription<T>(type, schema, table);
 
             foreach (var property in properties)
             {
