@@ -54,6 +54,9 @@ namespace moonstone.sql.context
         /// </summary>
         public string UserID { get; set; }
 
+        /// <summary>
+        /// Holds all ModelDescriptions. Use RegisterModelDescription to add items
+        /// </summary>
         protected ICollection<SqlModelDescription> ModelDescriptions { get; set; }
 
         /// <summary>
@@ -446,11 +449,20 @@ namespace moonstone.sql.context
             }
         }
 
+        /// <summary>
+        /// Retreives the model description for the specified type.
+        /// </summary>
+        /// <typeparam name="T">Type of the model</typeparam>
+        /// <returns></returns>
         public SqlModelDescription<T> GetModelDescription<T>()
         {
             return this.ModelDescriptions.SingleOrDefault(m => m is SqlModelDescription<T>) as SqlModelDescription<T>;
         }
 
+        /// <summary>
+        /// Returns the name of the users table
+        /// </summary>
+        /// <returns>Name of the users table</returns>
         public string GetUsersTableName()
         {
             return this.GetFQTableName(CORE_SCHEMA, USERS_TABLE);
@@ -490,6 +502,11 @@ namespace moonstone.sql.context
             }
         }
 
+        /// <summary>
+        /// Returns the insert command for the specified type.
+        /// </summary>
+        /// <typeparam name="T">Type for insert</typeparam>
+        /// <returns>Insert command for type</returns>
         public string InsertCommand<T>()
         {
             var modelDescription = this.GetModelDescription<T>();
@@ -618,6 +635,14 @@ namespace moonstone.sql.context
             }
         }
 
+        /// <summary>
+        /// Runs the specified command on the database.
+        /// </summary>
+        /// <typeparam name="TReturn">Type to be returned.</typeparam>
+        /// <param name="command">Command to run</param>
+        /// <param name="param">Optional param object (can be anonymous)</param>
+        /// <param name="mode">Specify 'Write' to run the command transactioned.</param>
+        /// <returns>Result of the query</returns>
         public IEnumerable<TReturn> RunCommand<TReturn>(string command, object param, CommandMode mode)
         {
             SqlConnection connection = null;
@@ -669,6 +694,12 @@ namespace moonstone.sql.context
             }
         }
 
+        /// <summary>
+        /// Runs the specified command on the database.
+        /// </summary>
+        /// <typeparam name="TReturn">Type to be returned.</typeparam>
+        /// <param name="command">Command to run</param>
+        /// <param name="param">Optional param object (can be anonymous)</param>
         public void RunCommand(string command, object param, CommandMode mode)
         {
             this.RunCommand<dynamic>(command: command, param: param, mode: mode);
@@ -773,6 +804,12 @@ namespace moonstone.sql.context
             }
         }
 
+        /// <summary>
+        /// Creates the command used to insert the installed version.
+        /// </summary>
+        /// <param name="version">Version to add</param>
+        /// <param name="param">Used params</param>
+        /// <returns>Insert command</returns>
         protected string BuildAddInstalledVersionCommand(SqlInstalledVersion version, out dynamic param)
         {
             var command = this.BuildCommand(
@@ -789,11 +826,22 @@ namespace moonstone.sql.context
             return command;
         }
 
+        /// <summary>
+        /// Returns the fully qualified table name (eg. [database].[schema].[table])
+        /// </summary>
+        /// <param name="schema">Schema of the table</param>
+        /// <param name="table">Name of the table</param>
+        /// <returns></returns>
         protected string GetFQTableName(string schema, string table)
         {
             return $"[{this.DatabaseName}].[{schema}].[{table}]";
         }
 
+        /// <summary>
+        /// Replaces special placeholders in the defined command (eg. ::db::)
+        /// </summary>
+        /// <param name="command">Command</param>
+        /// <returns>Command with actual values</returns>
         protected string ReplacePlaceholders(string command)
         {
             var placeholders = new Dictionary<string, string>()
