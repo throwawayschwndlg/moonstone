@@ -17,7 +17,9 @@ namespace moonstone.sql.context
 
     public class SqlContext
     {
-        private const string VERSION_TABLE = "db_version";
+        protected const string CORE_SCHEMA = "core";
+        protected const string USERS_TABLE = "users";
+        protected const string VERSION_TABLE = "db_version";
 
         /// <summary>
         /// The name of the database
@@ -52,6 +54,8 @@ namespace moonstone.sql.context
         /// </summary>
         public string UserID { get; set; }
 
+        protected ICollection<SqlModelDescription> ModelDescriptions { get; set; }
+
         /// <summary>
         /// Initializes a new context. Uses integrated security for connection.
         /// </summary>
@@ -75,6 +79,7 @@ namespace moonstone.sql.context
             this.ServerAddress = serverAddress;
             this.UserID = userId;
             this.Password = password;
+            this.ModelDescriptions = new List<SqlModelDescription>();
         }
 
         /// <summary>
@@ -441,6 +446,16 @@ namespace moonstone.sql.context
             }
         }
 
+        public SqlModelDescription<T> GetModelDescription<T>()
+        {
+            return this.ModelDescriptions.SingleOrDefault(m => m is SqlModelDescription<T>) as SqlModelDescription<T>;
+        }
+
+        public string GetUsersTableName()
+        {
+            return this.GetFQTableName(CORE_SCHEMA, USERS_TABLE);
+        }
+
         /// <summary>
         /// Returns the name of the version table.
         /// </summary>
@@ -472,6 +487,30 @@ namespace moonstone.sql.context
             {
                 throw new InitializeDatabaseException(
                     $"Failed to initialize the database", e);
+            }
+        }
+
+        public string InsertCommand<T>()
+        {
+            var modelDescription = this.GetModelDescription<T>();
+            if (modelDescription != null)
+            {
+                var propertiesForInsert = modelDescription.Properties()
+                    .Where(p => !p.IgnoreOnInsert);
+
+                var fieldNames = propertiesForInsert.Select(p => $"[{p.FieldName}]");
+                var propertyNames = propertiesForInsert.Select(p => $"@{p.PropertyName}");
+
+                string baseCommand =
+                    $"INSERT INTO {modelDescription.Table} ({string.Join(", ", fieldNames)}) "
+                    + $"VALUES ({string.Join(", ", propertyNames)});";
+
+                return this.BuildCommand(baseCommand, useSpecifiedDatabase: true);
+            }
+            else
+            {
+                throw new ModelDescriptionNotFoundException(
+                    $"Model description for type {typeof(T).Name} was not found. Is the type registered?");
             }
         }
 
@@ -529,6 +568,19 @@ namespace moonstone.sql.context
             }
 
             return connection;
+        }
+
+        public void RegisterModelDescription<T>(SqlModelDescription<T> modelDescription)
+        {
+            if (this.GetModelDescription<T>() == null)
+            {
+                this.ModelDescriptions.Add(modelDescription);
+            }
+            else
+            {
+                throw new TypeAlreadyRegisteredException(
+                    $"Type {typeof(T)} is already registerd.");
+            }
         }
 
         /// <summary>
@@ -623,6 +675,38 @@ namespace moonstone.sql.context
         }
 
         /// <summary>
+        /// Creates the select command for the specified type.
+        /// </summary>
+        /// <typeparam name="T">Type for select command. Must be registered as ModelDescription.</typeparam>
+        /// <returns></returns>
+        public string SelectCommand<T>(string whereClause = null)
+        {
+            var modelDescription = this.GetModelDescription<T>();
+            if (modelDescription != null)
+            {
+                var properties = modelDescription.Properties();
+
+                var baseCommand =
+                    $@"SELECT * FROM {modelDescription.Table}";
+
+                if (!string.IsNullOrWhiteSpace(whereClause))
+                {
+                    baseCommand = $"{baseCommand} WHERE {whereClause}";
+                }
+
+                baseCommand += ";";
+
+                return this.BuildCommand(baseCommand, useSpecifiedDatabase: true);
+                /* ({string.Join(";", properties.Select(p => p.FieldName))}*/
+            }
+            else
+            {
+                throw new ModelDescriptionNotFoundException(
+                    $"Model description for type {typeof(T).Name} was not found. Is the type registered?");
+            }
+        }
+
+        /// <summary>
         /// Returns the @@VERSION of the SQL Server
         /// </summary>
         /// <returns>Server Version, eg. Microsoft SQL Server 2014 - 12.0.2269.0 (X64)   Jun 10 2015 03:35:45   Copyright (c) Microsoft Corporation  Express Edition (64-bit) on Windows NT 6.3 ...</returns>
@@ -703,6 +787,11 @@ namespace moonstone.sql.context
             };
 
             return command;
+        }
+
+        protected string GetFQTableName(string schema, string table)
+        {
+            return $"[{this.DatabaseName}].[{schema}].[{table}]";
         }
 
         protected string ReplacePlaceholders(string command)

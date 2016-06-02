@@ -263,6 +263,26 @@ namespace moonstone.core.exceptions
     }
 
     [Serializable]
+    public class ModelDescriptionNotFoundException : Exception
+    {
+        public ModelDescriptionNotFoundException()
+        {
+        }
+
+        public ModelDescriptionNotFoundException(string message) : base(message)
+        {
+        }
+
+        public ModelDescriptionNotFoundException(string message, Exception inner) : base(message, inner)
+        {
+        }
+
+        protected ModelDescriptionNotFoundException(
+          System.Runtime.Serialization.SerializationInfo info,
+          System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
+    }
+
+    [Serializable]
     public class NoActiveTransactionException : Exception
     {
         public NoActiveTransactionException()
@@ -458,6 +478,26 @@ namespace moonstone.core.exceptions
         }
 
         protected TransactionNotInitializedException(
+          System.Runtime.Serialization.SerializationInfo info,
+          System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
+    }
+
+    [Serializable]
+    public class TypeAlreadyRegisteredException : Exception
+    {
+        public TypeAlreadyRegisteredException()
+        {
+        }
+
+        public TypeAlreadyRegisteredException(string message) : base(message)
+        {
+        }
+
+        public TypeAlreadyRegisteredException(string message, Exception inner) : base(message, inner)
+        {
+        }
+
+        protected TypeAlreadyRegisteredException(
           System.Runtime.Serialization.SerializationInfo info,
           System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
     }

@@ -6,8 +6,6 @@ namespace moonstone.authentication.models
 {
     public class IdentityUser : User, IUser<Guid>
     {
-        public Guid Id { get; set; }
-
         /// <summary>
         /// Gets and sets the email-address.
         /// Needed for asp.net identity.

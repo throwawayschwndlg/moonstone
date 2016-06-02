@@ -617,6 +617,21 @@ namespace moonstone.sql.test.context
         }
 
         [Test]
+        public void GetModelDescription_Can_Find_ModelDescription()
+        {
+            var validContext = GetValidContext();
+
+            var descriptionTypeA = SqlModelDescription<TypeA>.Auto("typeAs");
+            var descriptionTypeB = SqlModelDescription<TypeB>.Auto("typeBs");
+
+            validContext.RegisterModelDescription(descriptionTypeA);
+            validContext.RegisterModelDescription(descriptionTypeB);
+
+            validContext.GetModelDescription<TypeA>().ShouldBeEquivalentTo(descriptionTypeA);
+            validContext.GetModelDescription<TypeB>().ShouldBeEquivalentTo(descriptionTypeB);
+        }
+
+        [Test]
         public void Init_Creates_Database()
         {
             var validContext = GetValidContext();
@@ -646,6 +661,52 @@ namespace moonstone.sql.test.context
             validContext.Init();
 
             Assert.IsTrue(validContext.VersionTableExists());
+        }
+
+        [Test]
+        public void InsertCommand_Can_Build_Command()
+        {
+            string tableName = "typeCs";
+
+            var validContext = GetValidContext();
+            validContext.RegisterModelDescription(SqlModelDescription<TypeC>.Auto(tableName));
+
+            string command = validContext.InsertCommand<TypeC>();
+
+            command.Should().Be($"USE {DATABASE_NAME}; INSERT INTO {tableName} ([integer], [name]) VALUES (@Integer, @Name);");
+        }
+
+        [Test]
+        public void RegisterModelScription_Can_Not_Register_Duplicate_ModelDescription()
+        {
+            var validContext = GetValidContext();
+
+            validContext.RegisterModelDescription(SqlModelDescription<TypeA>.Auto("typeA"));
+
+            Assert.Throws<TypeAlreadyRegisteredException>(
+                () => validContext.RegisterModelDescription(SqlModelDescription<TypeA>.Auto("typeA")));
+        }
+
+        [Test]
+        public void RegisterModelScription_Can_Register_Multiple_ModelDescription()
+        {
+            var validContext = GetValidContext();
+
+            validContext.RegisterModelDescription(SqlModelDescription<TypeA>.Auto("typeA"));
+            validContext.RegisterModelDescription(SqlModelDescription<TypeB>.Auto("typeB"));
+
+            validContext.GetModelDescription<TypeA>().Should().NotBeNull();
+            validContext.GetModelDescription<TypeB>().Should().NotBeNull();
+        }
+
+        [Test]
+        public void RegisterModelScription_Can_Register_Single_ModelDescription()
+        {
+            var validContext = GetValidContext();
+
+            validContext.RegisterModelDescription(SqlModelDescription<TypeA>.Auto("typeA"));
+
+            validContext.GetModelDescription<TypeA>().Should().NotBeNull();
         }
 
         [Test]
@@ -718,6 +779,39 @@ namespace moonstone.sql.test.context
             Assert.True(exists);
         }
 
+        [Test]
+        public void SelectCommand_Can_Build_Command()
+        {
+            string tableName = "typeCs";
+
+            var validContext = GetValidContext();
+            validContext.RegisterModelDescription(SqlModelDescription<TypeC>.Auto(tableName));
+
+            string command = validContext.SelectCommand<TypeC>();
+
+            command.Should().Be($"USE {DATABASE_NAME}; SELECT * FROM {tableName};");
+        }
+
+        [Test]
+        public void SelectCommand_Can_Build_Command_With_Where_Clause()
+        {
+            string tableName = "typeCs";
+
+            var validContext = GetValidContext();
+            validContext.RegisterModelDescription(SqlModelDescription<TypeC>.Auto(tableName));
+
+            string command = validContext.SelectCommand<TypeC>("Id = @Id");
+
+            command.Should().Be($"USE {DATABASE_NAME}; SELECT * FROM {tableName} WHERE Id = @Id;");
+        }
+
+        [Test]
+        public void SelectCommand_Throws_On_Unregistered_Type()
+        {
+            Assert.Throws<ModelDescriptionNotFoundException>(()
+                => GetValidContext().SelectCommand<TypeA>());
+        }
+
         [SetUp]
         public void Setup()
         {
@@ -738,5 +832,31 @@ namespace moonstone.sql.test.context
                 validContext.DropDatabase();
             }
         }
+    }
+
+    public class TypeA
+    {
+        public string Name { get; set; }
+    }
+
+    public class TypeB
+    {
+        public int Integer { get; set; }
+    }
+
+    public class TypeC
+    {
+        public Guid Id { get; set; }
+
+        public int Integer { get; set; }
+        public string Name { get; set; }
+
+        public string Readonly
+        {
+            get
+            { return "readonly"; }
+        }
+
+        private int Hidden { get; set; }
     }
 }

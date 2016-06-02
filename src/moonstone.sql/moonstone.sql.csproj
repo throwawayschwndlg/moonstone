@@ -46,6 +46,7 @@
   <ItemGroup>
     <Compile Include="context\SqlContext.cs" />
     <Compile Include="context\SqlInstalledVersion.cs" />
+    <Compile Include="context\SqlModelDescription.cs" />
     <Compile Include="context\SqlScript.cs" />
     <Compile Include="context\SqlVersion.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
