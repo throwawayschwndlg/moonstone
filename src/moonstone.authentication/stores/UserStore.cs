@@ -1,20 +1,35 @@
 ﻿using Microsoft.AspNet.Identity;
-using moonstone.authentication.models;
+using moonstone.core.models;
+using moonstone.core.repositories;
 using System;
 using System.Threading.Tasks;
 
 namespace moonstone.authentication.stores
 {
-    public class UserStore<TUser> :
-        IUserStore<TUser, Guid>
-        where TUser : IdentityUser
+    public class UserStore : IUserStore<User, Guid>
     {
-        public Task CreateAsync(TUser user)
+        public IUserRepository UserRepository { get; set; }
+
+        public UserStore(IUserRepository userRepository)
         {
-            throw new NotImplementedException();
+            this.UserRepository = userRepository;
         }
 
-        public Task DeleteAsync(TUser user)
+        public Task CreateAsync(User user)
+        {
+            try
+            {
+                this.UserRepository.Create(user);
+
+                return Task.FromResult(0);
+            }
+            catch (Exception e)
+            {
+                return Task.FromException(e);
+            }
+        }
+
+        public Task DeleteAsync(User user)
         {
             throw new NotImplementedException();
         }
@@ -24,19 +39,43 @@ namespace moonstone.authentication.stores
             throw new NotImplementedException();
         }
 
-        public Task<TUser> FindByIdAsync(Guid userId)
+        public Task<User> FindByIdAsync(Guid userId)
         {
-            throw new NotImplementedException();
+            try
+            {
+                return Task.FromResult(this.UserRepository.GetById(userId));
+            }
+            catch (Exception e)
+            {
+                return Task.FromException<User>(e);
+            }
         }
 
-        public Task<TUser> FindByNameAsync(string userName)
+        public Task<User> FindByNameAsync(string userName)
         {
-            throw new NotImplementedException();
+            try
+            {
+                return Task.FromResult(this.UserRepository.GetByEmail(userName));
+            }
+            catch (Exception e)
+            {
+                return Task.FromException<User>(e);
+            }
         }
 
-        public Task UpdateAsync(TUser user)
+        public Task UpdateAsync(User user)
         {
-            throw new NotImplementedException();
+            try
+            {
+                this.UserRepository.Update(user);
+
+                return Task.FromResult(0);
+            }
+            catch (Exception e)
+            {
+                return Task.FromException(e);
+                throw;
+            }
         }
     }
 }

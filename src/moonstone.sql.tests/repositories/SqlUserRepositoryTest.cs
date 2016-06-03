@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using moonstone.core.models;
+using moonstone.sql.configs;
 using moonstone.sql.context;
 using moonstone.sql.repositories;
 using NUnit.Framework;
@@ -73,7 +74,23 @@ namespace moonstone.sql.tests.repositories
         {
             this.Context = new SqlContext("moonstone_dev_tests", ".");
             this.UserRepository = new SqlUserRepository(this.Context);
-            this.Context.RegisterModelDescription(SqlModelDescription<User>.Auto("core", "users"));
+            this.Context.RegisterModelDescription(ModelDescriptions.User());
+        }
+
+        [Test]
+        public void Update_Can_Update_User()
+        {
+            var user = GetNewUser();
+            Guid userId = this.UserRepository.Create(user);
+            user = this.UserRepository.GetByEmail(user.Email);
+
+            user.Email = $"edited_{GetNewUser().Email}";
+
+            this.UserRepository.Update(user);
+
+            var updatedUser = this.UserRepository.GetById(user.Id);
+            updatedUser.Email.ShouldBeEquivalentTo(user.Email);
+            updatedUser.Id.ShouldBeEquivalentTo(user.Id);
         }
 
         private static User GetNewUser()

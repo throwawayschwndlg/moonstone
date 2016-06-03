@@ -42,7 +42,6 @@ namespace moonstone.sql.repositories
             {
                 throw new QueryUsersException(
                     $"Failed to get user by email {email}", e);
-                throw;
             }
         }
 
@@ -60,7 +59,23 @@ namespace moonstone.sql.repositories
             {
                 throw new QueryUsersException(
                     $"Failed to get user by Id {id}", e);
-                throw;
+            }
+        }
+
+        public void Update(User user)
+        {
+            try
+            {
+                var command = this.Context.UpdateCommand<User>("id = @id");
+                this.Context.RunCommand(
+                    command: command,
+                    param: user,
+                    mode: CommandMode.Write);
+            }
+            catch (Exception e)
+            {
+                throw new UpdateUserException(
+                    $"Failed to update user.", e);
             }
         }
     }

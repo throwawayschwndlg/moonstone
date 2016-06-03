@@ -617,6 +617,31 @@ namespace moonstone.sql.test.context
         }
 
         [Test]
+        public void DeleteCommand_Can_Build_Command()
+        {
+            string schema = "core";
+            string table = "typeCs";
+            string whereClause = "id = @Id";
+
+            var validContext = GetValidContext();
+            validContext.RegisterModelDescription(SqlModelDescription<TypeC>.Auto(schema, table));
+
+            var command = validContext.DeleteCommand<TypeC>(whereClause);
+
+            command.Should().BeEquivalentTo($"DELETE FROM [{schema}].[{table}] WHERE {whereClause};");
+        }
+
+        [Test]
+        public void DeleteCommand_Throws_On_Empty_WhereClause()
+        {
+            var validContext = GetValidContext();
+
+            Assert.Throws<ArgumentException>(() => validContext.DeleteCommand<TypeC>(null));
+            Assert.Throws<ArgumentException>(() => validContext.DeleteCommand<TypeC>(string.Empty));
+            Assert.Throws<ArgumentException>(() => validContext.DeleteCommand<TypeC>("    "));
+        }
+
+        [Test]
         public void GetModelDescription_Can_Find_ModelDescription()
         {
             var validContext = GetValidContext();
@@ -834,6 +859,30 @@ namespace moonstone.sql.test.context
             {
                 validContext.DropDatabase();
             }
+        }
+
+        [Test]
+        public void UpdateCommand_Can_Build_Command()
+        {
+            string schema = "core";
+            string table = "typeCs";
+            string whereClause = "id = @Id";
+
+            var validContext = GetValidContext();
+            validContext.RegisterModelDescription(SqlModelDescription<TypeC>.Auto(schema, table));
+
+            var command = validContext.UpdateCommand<TypeC>(whereClause);
+
+            command.Should().Be($"UPDATE [{schema}].[{table}] SET [integer] = @Integer, [name] = @Name WHERE {whereClause};");
+        }
+
+        [Test]
+        public void UpdateCommand_Throws_On_Empty_WhereClause()
+        {
+            var validContext = GetValidContext();
+            Assert.Throws<ArgumentException>(() => validContext.UpdateCommand<TypeC>(null));
+            Assert.Throws<ArgumentException>(() => validContext.UpdateCommand<TypeC>(string.Empty));
+            Assert.Throws<ArgumentException>(() => validContext.UpdateCommand<TypeC>("    "));
         }
     }
 

@@ -30,6 +30,7 @@ namespace moonstone.sql.context
 
         public static SqlModelDescription<T> Auto(string schema, string table)
         {
+            var key_fields = new string[] { "id" };
             var ignore_insert_fields = new string[] { "id" };
             var ignore_update_fields = new string[] { "id" };
 
@@ -46,6 +47,8 @@ namespace moonstone.sql.context
                     continue;
                 }
 
+                bool isKey = key_fields.Contains(property.Name, StringComparer.InvariantCulture);
+
                 bool ignoreOnInsert = ignore_insert_fields.Contains(property.Name, StringComparer.InvariantCultureIgnoreCase);
 
                 bool ignoreOnUpdate = ignore_update_fields.Contains(property.Name, StringComparer.InvariantCultureIgnoreCase);
@@ -53,6 +56,7 @@ namespace moonstone.sql.context
                 var propertyDescription = new SqlPropertyDescription(
                     propertyName: property.Name,
                     fieldName: property.Name.ToLower(),
+                    isKey: isKey,
                     ignoreOnInsert: ignoreOnInsert,
                     ignoreOnUpdate: ignoreOnUpdate);
 
@@ -78,6 +82,16 @@ namespace moonstone.sql.context
         public void RegisterProperty(SqlPropertyDescription propertyDescription)
         {
             this.PropertyDescriptions.Add(propertyDescription);
+        }
+
+        public SqlModelDescription<T> WithReadOnly<TProperty>(Expression<Func<T, TProperty>> prop)
+        {
+            var registeredProperty = this.Property(prop);
+
+            registeredProperty.IgnoreOnInsert = true;
+            registeredProperty.IgnoreOnUpdate = true;
+
+            return this;
         }
 
         protected SqlPropertyDescription Property(string propertyName)
@@ -106,6 +120,11 @@ namespace moonstone.sql.context
         public bool IgnoreOnUpdate { get; set; }
 
         /// <summary>
+        /// Controls if the property will be treated as key
+        /// </summary>
+        public bool IsKey { get; set; }
+
+        /// <summary>
         /// Name of the database table field
         /// </summary>
         public string PropertyName { get; set; }
@@ -115,10 +134,11 @@ namespace moonstone.sql.context
         /// </summary>
         /// <param name="propertyName">Name of the property</param>
         /// <param name="fieldName">Name of the database table field</param>
-        public SqlPropertyDescription(string propertyName, string fieldName, bool ignoreOnInsert, bool ignoreOnUpdate)
+        public SqlPropertyDescription(string propertyName, string fieldName, bool isKey, bool ignoreOnInsert, bool ignoreOnUpdate)
         {
             this.PropertyName = propertyName;
             this.FieldName = fieldName;
+            this.IsKey = isKey;
             this.IgnoreOnInsert = ignoreOnInsert;
             this.IgnoreOnUpdate = ignoreOnUpdate;
         }

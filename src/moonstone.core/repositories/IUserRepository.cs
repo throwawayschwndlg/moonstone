@@ -10,5 +10,7 @@ namespace moonstone.core.repositories
         User GetByEmail(string email);
 
         User GetById(Guid id);
+
+        void Update(User user);
     }
 }

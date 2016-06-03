@@ -276,6 +276,28 @@ namespace moonstone.sql.context
             }
         }
 
+        public string DeleteCommand<T>(string whereClause)
+        {
+            if (string.IsNullOrWhiteSpace(whereClause))
+            {
+                throw new ArgumentException(
+                    $"whereCaluse must not be null or empty.", nameof(whereClause));
+            }
+
+            var modelDescription = this.GetModelDescription<T>();
+            if (modelDescription != null)
+            {
+                string command = $"DELETE FROM [{modelDescription.Schema}].[{modelDescription.Table}] WHERE {whereClause};";
+
+                return command;
+            }
+            else
+            {
+                throw new ModelDescriptionNotFoundException(
+                    $"Model description for type {typeof(T).Name} was not found. Is the type registered?");
+            }
+        }
+
         /// <summary>
         /// Drops the database
         /// </summary>
@@ -769,7 +791,7 @@ namespace moonstone.sql.context
         /// Checks if a table exists on the server.
         /// </summary>
         /// <param name="table">Table name</param>
-        /// <param name="useSpecifiedDatabase">If true, query uses the Database specified in the contructor.
+        /// <param name="useSpecifiedDatabase">If true, query uses the Database specified in the constructor.
         /// If false, master database will be used.</param>
         /// <returns>True if table was found. Otherwise false.</returns>
         public bool TableExists(string table, bool useSpecifiedDatabase)
@@ -790,6 +812,34 @@ namespace moonstone.sql.context
             {
                 throw new MetaQueryException(
                     $"Failed to check for existence of table '{table}'.", e);
+            }
+        }
+
+        public string UpdateCommand<T>(string whereClause)
+        {
+            if (string.IsNullOrWhiteSpace(whereClause))
+            {
+                throw new ArgumentException(
+                    $"whereClause cannot be null or empty", nameof(whereClause));
+            }
+
+            var modelDescription = this.GetModelDescription<T>();
+            if (modelDescription != null)
+            {
+                var properties = modelDescription.Properties().Where(p => !p.IgnoreOnUpdate && !p.IsKey);
+
+                string assigns = string.Join(", ", properties.Select(p => $"[{p.FieldName}] = @{p.PropertyName}"));
+
+                var command = $"UPDATE [{modelDescription.Schema}].[{modelDescription.Table}] "
+                                + $"SET {assigns} "
+                                + $"WHERE {whereClause};";
+
+                return command;
+            }
+            else
+            {
+                throw new ModelDescriptionNotFoundException(
+                    $"Model description for type {typeof(T).Name} was not found. Is the type registered?");
             }
         }
 
