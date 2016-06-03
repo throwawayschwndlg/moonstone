@@ -1,15 +1,14 @@
 ﻿using Microsoft.AspNet.Identity;
-using moonstone.core.models;
 using System;
 
-namespace moonstone.authentication.models
+namespace moonstone.core.models
 {
-    public class IdentityUser : User, IUser<Guid>
+    public class User : IUser<Guid>
     {
-        /// <summary>
-        /// Gets and sets the email-address.
-        /// Needed for asp.net identity.
-        /// </summary>
+        public string Email { get; set; }
+
+        public Guid Id { get; set; }
+
         public string UserName
         {
             get
