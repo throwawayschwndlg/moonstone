@@ -44,6 +44,26 @@ namespace moonstone.sql.tests.repositories
         }
 
         [Test]
+        public void Delete_Can_Delete_User()
+        {
+            var user = GetNewUser();
+            this.UserRepository.Create(user);
+
+            bool userExistsBeforeDelete = false;
+            bool userExistsAfterDelete = false;
+
+            user = this.UserRepository.GetByEmail(user.Email);
+            userExistsBeforeDelete = user != null;
+
+            this.UserRepository.Delete(user);
+
+            userExistsAfterDelete = this.UserRepository.GetByEmail(user.Email) != null;
+
+            Assert.IsTrue(userExistsBeforeDelete);
+            Assert.IsFalse(userExistsAfterDelete);
+        }
+
+        [Test]
         public void GetByEmail_Can_Find_User()
         {
             var user = GetNewUser();

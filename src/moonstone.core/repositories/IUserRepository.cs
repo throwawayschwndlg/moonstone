@@ -7,6 +7,8 @@ namespace moonstone.core.repositories
     {
         Guid Create(User user);
 
+        void Delete(User user);
+
         User GetByEmail(string email);
 
         User GetById(Guid id);

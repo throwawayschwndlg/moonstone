@@ -31,12 +31,21 @@ namespace moonstone.authentication.stores
 
         public Task DeleteAsync(User user)
         {
-            throw new NotImplementedException();
+            try
+            {
+                this.UserRepository.Delete(user);
+
+                return Task.FromResult(0);
+            }
+            catch (Exception e)
+            {
+                return Task.FromException<User>(e);
+            }
         }
 
         public void Dispose()
         {
-            throw new NotImplementedException();
+            // todo: implement dispose
         }
 
         public Task<User> FindByIdAsync(Guid userId)

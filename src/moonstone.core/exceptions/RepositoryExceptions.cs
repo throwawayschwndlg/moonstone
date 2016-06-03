@@ -27,6 +27,26 @@ namespace moonstone.core.exceptions
     }
 
     [Serializable]
+    public class DeleteUserException : Exception
+    {
+        public DeleteUserException()
+        {
+        }
+
+        public DeleteUserException(string message) : base(message)
+        {
+        }
+
+        public DeleteUserException(string message, Exception inner) : base(message, inner)
+        {
+        }
+
+        protected DeleteUserException(
+          System.Runtime.Serialization.SerializationInfo info,
+          System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
+    }
+
+    [Serializable]
     public class QueryUsersException : Exception
     {
         public QueryUsersException()

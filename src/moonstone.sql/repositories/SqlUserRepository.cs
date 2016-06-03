@@ -28,6 +28,22 @@ namespace moonstone.sql.repositories
             }
         }
 
+        public void Delete(User user)
+        {
+            try
+            {
+                this.Context.RunCommand(
+                    command: this.Context.DeleteCommand<User>("id = @Id"),
+                    param: user,
+                    mode: CommandMode.Write);
+            }
+            catch (Exception e)
+            {
+                throw new DeleteUserException(
+                    $"Failed to delete user", e);
+            }
+        }
+
         public User GetByEmail(string email)
         {
             try
