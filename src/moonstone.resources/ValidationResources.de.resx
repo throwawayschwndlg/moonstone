@@ -129,6 +129,9 @@
   <data name="Category_GetAllForCurrentGroup_Error" xml:space="preserve">
     <value>Fehler beim Abfragen der Kategorien für die aktuelle Gruppe.</value>
   </data>
+  <data name="Currency_GetExchangeRate_Error" xml:space="preserve">
+    <value>Fehler beim Abfragen des Wechselkurses für {0} und {1}. Bitte tragen Sie den Wechselkurs manuell ein.</value>
+  </data>
   <data name="Generic_Error" xml:space="preserve">
     <value>Fehler. Bitte versuchen Sie es später erneut.</value>
   </data>
@@ -156,7 +159,13 @@
   <data name="User_Login_Success" xml:space="preserve">
     <value>Erfolgreich angemeldet als {0}</value>
   </data>
+  <data name="User_ProfileSettings_Success" xml:space="preserve">
+    <value>Ihre Profileinstellungen wurden übernommen.</value>
+  </data>
   <data name="User_SelectGroup_NotInGroup" xml:space="preserve">
     <value>Keine valide Gruppe.</value>
+  </data>
+  <data name="User_SetTimeZone_Success" xml:space="preserve">
+    <value>Ihre Zeitzone wurde auf "{0}" geändert.</value>
   </data>
 </root>

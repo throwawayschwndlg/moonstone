@@ -7,6 +7,7 @@ namespace moonstone.core.models
     {
         public int AccessFailedCount { get; set; }
 
+        public bool AutoUpdateTimeZone { get; set; }
         public DateTime CreateDateUtc { get; set; }
         public string Culture { get; set; }
         public Guid? CurrentGroupId { get; set; }
@@ -15,6 +16,7 @@ namespace moonstone.core.models
         public bool IsLockoutEnabled { get; set; }
         public DateTime? LockoutEndDateUtc { get; set; }
         public string PasswordHash { get; set; }
+        public string TzdbTimeZoneId { get; set; }
 
         public string UserName
         {

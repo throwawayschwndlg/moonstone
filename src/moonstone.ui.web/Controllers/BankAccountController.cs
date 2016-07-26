@@ -36,8 +36,10 @@ namespace moonstone.ui.web.Controllers
                         Name = model.Name,
                         Description = model.Description,
                         CreateUserId = this.Current.User.Id,
-                        GroupId = this.Current.User.CurrentGroupId.Value
-                    });
+                        Currency = model.Currency,
+                        StartingBalance = model.StartingBalance
+                    },
+                    startingBalance: model.StartingBalance);
 
                     return this.JsonSuccess(
                         data: null,
@@ -55,12 +57,12 @@ namespace moonstone.ui.web.Controllers
         }
 
         [HttpGet]
-        public ActionResult GetAllBankAccountsForCurrentGroup()
+        public ActionResult GetAllBankAccountsForCurrentUser()
         {
             try
             {
-                var res = this.Current.Services.BankAccountService.GetBankAccountsForGroup(
-                    this.Current.User.CurrentGroupId.Value)
+                var res = this.Current.Services.BankAccountService.GetBankAccountsForUser(
+                    this.Current.User.Id)
                     .Select(b => new { name = b.Name, value = b.Id })
                     .OrderBy(b => b.name);
 

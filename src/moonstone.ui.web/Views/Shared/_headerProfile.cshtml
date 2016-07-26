@@ -1,11 +1,11 @@
 ﻿<div class="ui dropdown item ms-nav-profile-dropdown">
-    <i class="user icon"></i> david.szoeke@gmail.com
-    <i class="dropdown icon"></i>
+    <i class="user icon"></i>@User.Identity.Name
     <div class="menu">
+
         <a class="item">
             <i class="mail icon"></i> Messages
         </a>
-        <a class="item">
+        <a class="item" href="@Routes.ProfileSettings.GetActionLink(Url)">
             <i class="setting icon"></i> Profile settings
         </a>
 

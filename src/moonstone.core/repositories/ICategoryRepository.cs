@@ -14,5 +14,7 @@ namespace moonstone.core.repositories
         Category GetById(Guid id);
 
         IEnumerable<Category> GetCategoriesForGroup(Guid groupId);
+
+        IEnumerable<Category> GetCategoriesForUser(Guid userId);
     }
 }

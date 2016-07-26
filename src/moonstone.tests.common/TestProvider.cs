@@ -43,13 +43,12 @@ namespace moonstone.tests.common
                 userRepo.Create(TestProvider.GetNewUser()));
         }
 
-        public static BankAccount GetNewBankAccount(Guid createUserId, Guid groupId)
+        public static BankAccount GetNewBankAccount(Guid createUserId)
         {
             return new BankAccount
             {
                 CreateUserId = createUserId,
                 Description = $"Description_{Guid.NewGuid()}",
-                GroupId = groupId,
                 Name = $"BankAccount_{Guid.NewGuid()}"
             };
         }

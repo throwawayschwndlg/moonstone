@@ -72,6 +72,7 @@ namespace moonstone.ui.web
     {
         public static RouteEntry CreateBankAccount = new RouteEntry("CreateBankAccount", "BankAccount", "Create");
         public static RouteEntry CreateCategory = new RouteEntry("CreateCategory", "Category", "Create");
+        public static RouteEntry CreateExpense = new RouteEntry("CreateExpense", "Transaction", "Expense");
         public static RouteEntry CreateGroup = new RouteEntry("CreateGroup", "Group", "Create");
         public static RouteEntry CreateTransaction = new RouteEntry("CreateTransaction", "Transaction", "Create");
         public static RouteEntry Error = new RouteEntry("Error", "Error", "Index");
@@ -83,6 +84,8 @@ namespace moonstone.ui.web
         public static RouteEntry LoggedOut = new RouteEntry("LoggedOut", "User", "LoggedOut");
         public static RouteEntry Login = new RouteEntry("Login", "User", "Login");
         public static RouteEntry Logout = new RouteEntry("Logout", "User", "Logout");
+        public static RouteEntry ProfileSettings = new RouteEntry("ProfileSettings", "User", "Settings");
         public static RouteEntry SelectGroup = new RouteEntry("SelectGroup", "User", "SelectGroup");
+        public static RouteEntry UserProfileInfo = new RouteEntry("UserProfileInfo", "User", "GetProfileInformation");
     }
 }

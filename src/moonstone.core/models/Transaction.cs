@@ -15,6 +15,7 @@ namespace moonstone.core.models
         public string Currency { get; set; }
         public string Description { get; set; }
         public Guid? DestinationBankAccountId { get; set; }
+        public float ExchangeRate { get; set; }
         public Guid GroupId { get; set; }
         public Guid Id { get; set; }
 

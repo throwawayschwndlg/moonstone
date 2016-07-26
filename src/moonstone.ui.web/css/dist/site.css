@@ -63,3 +63,7 @@ footer {
 .field-validation-valid {
     display: none !important;
 }
+
+.ms-field-exchangeRate {
+    display: none;
+}

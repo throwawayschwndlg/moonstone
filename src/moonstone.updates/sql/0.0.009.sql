@@ -3,9 +3,12 @@
 CREATE TABLE [core].[bankAccounts] (
 	[id] UNIQUEIDENTIFIER NOT NULL,
 	[groupId] UNIQUEIDENTIFIER NOT NULL,
-	[name] nvarchar(256) NOT NULL,
-	[description] nvarchar(2048) NOT NULL,
+	[name] NVARCHAR(256) NOT NULL,
+	[description] NVARCHAR(2048) NOT NULL,
+	[currency] NVARCHAR(16) NOT NULL,
+	[startingBalance] MONEY NOT NULL,
 	[createUserId] UNIQUEIDENTIFIER NOT NULL,
+
 
 	PRIMARY KEY(id)
 );

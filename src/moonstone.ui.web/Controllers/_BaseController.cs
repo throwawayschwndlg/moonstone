@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNet.Identity;
 using moonstone.ui.web.Models;
+using Newtonsoft.Json;
 using System;
 using System.Web.Mvc;
 using System.Web.Routing;
@@ -26,27 +27,32 @@ namespace moonstone.ui.web.Controllers
             // TODO: Add logging
         }
 
-        protected JsonResult JsonError(dynamic data, string message)
+        protected ActionResult JsonError(dynamic data, string message)
         {
             return this.JsonError(data, message, returnUrl: null);
         }
 
-        protected JsonResult JsonError(dynamic data, string message, string returnUrl)
+        protected ActionResult JsonError(dynamic data, string message, string returnUrl)
         {
             return this.JsonResponse(false, data, message, returnUrl);
         }
 
-        protected JsonResult JsonResponse(bool success, dynamic data, string message, string returnUrl)
+        protected ActionResult JsonResponse(bool success, dynamic data, string message, string returnUrl)
         {
-            return Json(new { success = success, message = message, data = data, returnUrl = returnUrl }, JsonRequestBehavior.AllowGet);
+            JsonNetResult result = new JsonNetResult();
+            //result.Formatting = Formatting.Indented; // for nice looking results
+            result.Formatting = Formatting.None;
+            result.Data = new { success = success, message = message, data = data, returnUrl = returnUrl };
+
+            return result;
         }
 
-        protected JsonResult JsonSuccess(dynamic data, string message)
+        protected ActionResult JsonSuccess(dynamic data, string message)
         {
             return this.JsonSuccess(data, message, returnUrl: null);
         }
 
-        protected JsonResult JsonSuccess(dynamic data, string message, string returnUrl)
+        protected ActionResult JsonSuccess(dynamic data, string message, string returnUrl)
         {
             return this.JsonResponse(true, data, message, returnUrl: returnUrl);
         }

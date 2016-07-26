@@ -34,6 +34,18 @@
       <HintPath>..\packages\Microsoft.AspNet.Identity.Core.2.2.1\lib\net45\Microsoft.AspNet.Identity.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="NodaTime, Version=1.3.0.0, Culture=neutral, PublicKeyToken=4226afe0d9b296d1, processorArchitecture=MSIL">
+      <HintPath>..\packages\NodaTime.1.3.2\lib\net35-Client\NodaTime.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="NodaTime.Serialization.JsonNet, Version=1.3.0.0, Culture=neutral, PublicKeyToken=4226afe0d9b296d1, processorArchitecture=MSIL">
+      <HintPath>..\packages\NodaTime.Serialization.JsonNet.1.3.2\lib\net35-Client\NodaTime.Serialization.JsonNet.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -48,7 +60,10 @@
     <Compile Include="exceptions\IOExceptions.cs" />
     <Compile Include="exceptions\RepositoryExceptions.cs" />
     <Compile Include="exceptions\ServiceExceptions.cs" />
+    <Compile Include="exceptions\UtilsExceptions.cs" />
     <Compile Include="i18n\CultureNinja.cs" />
+    <Compile Include="i18n\DateTimeExtensions.cs" />
+    <Compile Include="i18n\TimeZoneUtils.cs" />
     <Compile Include="models\BankAccount.cs" />
     <Compile Include="models\Category.cs" />
     <Compile Include="models\Currency.cs" />
@@ -72,10 +87,13 @@
     <Compile Include="services\ILoginService.cs" />
     <Compile Include="services\ITransactionService.cs" />
     <Compile Include="services\IUserService.cs" />
+    <Compile Include="services\results\ExchangeRateResult.cs" />
     <Compile Include="services\results\LoginResult.cs" />
     <Compile Include="services\ServiceHub.cs" />
+    <Compile Include="utils\MSWebRequest.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

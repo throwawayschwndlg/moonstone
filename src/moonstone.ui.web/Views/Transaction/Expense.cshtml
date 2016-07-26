@@ -1,0 +1,94 @@
+﻿@using moonstone.ui.web.Models.ViewModels.Transaction
+@model CreateExpenseViewModel
+
+@using (Html.BeginForm(Routes.CreateExpense.Action, Routes.CreateExpense.Controller, FormMethod.Post, new { @class = "ui form ms-create-expense-form" }))
+{
+    <div class="field">
+        @Html.LabelFor(m => m.Title)
+        @Html.EditorFor(m => m.Title, new { htmlAttributes = new { autofocus = "autofocus" } })
+        @Html.MSValidationMessageFor(m => m.Title)
+    </div>
+
+    <div class="field">
+        @Html.LabelFor(m => m.SourceBankAccountId)
+        @Html.EditorFor(m => m.SourceBankAccountId)
+        @Html.MSValidationMessageFor(m => m.SourceBankAccountId)
+    </div>
+
+    <div class="field">
+        @Html.LabelFor(m => m.Amount)
+        @Html.EditorFor(m => m.Amount)
+        @Html.MSValidationMessageFor(m => m.Amount)
+    </div>
+
+    <div class="field ms-field-exchangeRate">
+        @Html.LabelFor(m => m.ExchangeRate)
+        @Html.EditorFor(m => m.ExchangeRate)
+        @Html.MSValidationMessageFor(m => m.ExchangeRate)
+    </div>
+
+    <div class="field">
+        @Html.LabelFor(m => m.Currency)
+        @Html.EditorFor(m => m.Currency)
+        @Html.MSValidationMessageFor(m => m.Currency)
+    </div>
+
+    <div class="field">
+        @Html.LabelFor(m => m.CategoryId)
+        @Html.EditorFor(m => m.CategoryId)
+        @Html.MSValidationMessageFor(m => m.CategoryId)
+    </div>
+
+    <div class="field">
+        @Html.LabelFor(m => m.Description)
+        @Html.EditorFor(m => m.Description)
+        @Html.MSValidationMessageFor(m => m.Description)
+    </div>
+
+    <div class="field">
+        @Html.LabelFor(m => m.ValueDate)
+        @Html.EditorFor(m => m.ValueDate)
+        @Html.MSValidationMessageFor(m => m.ValueDate)
+    </div>
+
+    <button class="ui positive submit button">Create expense</button>
+}
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        var apiAction = 'api-create-expense';
+        var formSelector = '.ms-create-expense-form';
+
+        bindFormSubmit(formSelector, apiAction);
+
+        registerChangeListener($('#@Html.IdFor(m => m.SourceBankAccountId).ToString()'), triggerExchangeRateChange);
+        registerChangeListener($('#@Html.IdFor(m => m.Currency).ToString()'), triggerExchangeRateChange);
+        registerChangeListener($('#@Html.IdFor(m => m.ValueDate).ToString()'), triggerExchangeRateChange);
+    });
+
+    function triggerExchangeRateChange() {
+        var sourceAccountId = $('#@Html.IdFor(m => m.SourceBankAccountId)').dropdown('get value');
+        var currency = $('#@Html.IdFor(m => m.Currency)').dropdown('get value');
+        var date = $('#@Html.IdFor(m => m.ValueDate)').val();
+        var $exchangeRateField = $('.ms-field-exchangeRate');
+        var $exchangeRateElement = $('#@Html.IdFor(m => m.ExchangeRate)');
+        var fieldErrorClasses = "field error";
+
+        moonstone.json.currencies.getExchangeRateForExpense(sourceAccountId, currency, date, function (result) {
+            $exchangeRateElement.val(result.data.Rate);
+            if (result.data.Base !== result.data.Target) {
+                showElement($exchangeRateField);
+            }
+            else {
+                hideElement($exchangeRateField);
+            }
+
+            $exchangeRateField.removeClass(fieldErrorClasses);
+        },
+        function (result) {
+            displayError(null, result.message);
+            showElement($exchangeRateField);
+            $exchangeRateField.addClass(fieldErrorClasses);
+        });
+    }
+</script>

@@ -1,10 +1,20 @@
-﻿var ms_profile_info = null;
-
-$(document).ready(function () {
-    initSemanticUi();
-    initFlatpickr();
-    initToastr();
+﻿$(function () {
+    init();
 });
+
+function init() {
+    // profile agnostic inits
+    initSemanticUi();
+    initToastr();
+    initOffline();
+    initMoonstone();
+
+    // profile based inits / settings
+    loadUserProfile(function () {
+        updateTimeZone();
+        initPikaday();
+    });
+}
 
 function initSemanticUi() {
     // api
@@ -14,10 +24,13 @@ function initSemanticUi() {
         'api-create-category': '/category/create',
         'api-create-group': '/group/create',
         'api-create-transaction': '/transaction/create',
+        'api-create-expense': '/transaction/expense',
         'api-get-profile-info': '/User/GetProfileInformation',
         'api-get-categories-for-current-group': '/category/GetAllCategoriesForCurrentGroup',
-        'api-get-bankaccounts-for-current-group': '/bankaccount/GetAllBankAccountsForCurrentGroup',
-        'api-get-currencies': '/currency/GetAllCurrencies'
+        'api-get-bankaccounts-for-current-user': '/bankaccount/GetAllBankAccountsForCurrentUser',
+        'api-get-timezones': '/user/getTimeZones',
+        'api-get-currencies': '/currency/GetAllCurrencies',
+        'api-update-profile-settings': '/user/settings',
     };
     $.fn.api.settings.successTest = function (response) {
         if (response && response.success) {
@@ -28,32 +41,28 @@ function initSemanticUi() {
     $.fn.api.settings.onSuccess = handleApiSuccess;
     $.fn.api.settings.onFailure = handleApiFailure;
 
-    // get profile information
-    $('body').api({
-        action: 'api-get-profile-info', on: 'now',
-        onSuccess: function (response) {
-            console.log('success');
-        },
-        onFailure: function (response) {
-            // user probably not signed in
-        }
-    });
-
     // nav dropdowns
     $('.ms-nav-profile-dropdown').dropdown();
     $('.ms-nav-group-dropdown').dropdown();
 
     // checkboxes
-    $('ui.checkbox').checkbox();
+    $('.ui.checkbox').checkbox({
+        onChecked: function () { $(this).val(true); },
+        onUnchecked: function () { $(this).val(false); }
+    });
+    // checkboxes - this is some true shit. fix this ASAP
+    $.each($('.ui.checkbox').find('input'), function () {
+        if ($(this).val() == "True") {
+            $(this).parent().checkbox('check');
+        }
+        else {
+            $(this).parent().checkbox('uncheck');
+        }
+    });
 
     // icon toolbar tooltips
     $(".ms-icon-bar .item").popup();
-    console.log('semantic initialized');
-}
-
-function initFlatpickr() {
-    flatpickr('.ms-date-selector');
-    console.log('flatpickr initialized');
+    moonstone.log('semantic initialized');
 }
 
 function initToastr() {
@@ -76,12 +85,80 @@ function initToastr() {
     }
 }
 
+function initOffline() {
+    if (moonstone.isDebug) {
+        Offline.options =
+            {
+                checks:
+                    {
+                        xhr: { url: 'https://httpbin.org/ip' }
+                    },
+                checkOnLoad: true
+            };
+    }
+
+    Offline.on('down', function () {
+        moonstone.log('connection lost');
+        displayMessage('error', 'connection lost', 'Connection lost.');
+    });
+    Offline.on('up', function () {
+        moonstone.log('reconnected');
+        displayMessage('success', 'connection has been restored', 'Connection has been restored.');
+    });
+
+    moonstone.log('Offline initialized.');
+}
+
+function initMoonstone() {
+    moonstone.json.antiForgeryToken = $('[name=__RequestVerificationToken]').first().val();
+};
+
+function initPikaday() {
+    $('.ms-date-selector').each(function () {
+        $picker = $(this);
+        $picker.pikaday({
+            format: 'YYYY/MM/DD'
+        });
+        $picker.change(function () {
+            // first, we need to get the pikaday instance...
+            var pika = $(this).data('pikaday');
+            // now, let's find the input element which will hold the value that will be sent to the server
+            var $hidden = $(this).prev('input');
+            // format the selected date to our default format.
+            $hidden.val(pika.getMoment().format('YYYY-MM-DD')).trigger('change');
+        });
+    });
+
+    moonstone.log('pikaday initialized');
+};
+
+function updateTimeZone() {
+    if (user_profile_info.autoUpdateTimeZone) {
+        var userTz = moment.tz.guess();
+        moonstone.log(sprintf('Client timezone is %s', userTz));
+
+        if (user_profile_info.timeZone == null || user_profile_info.timeZone != userTz) {
+            moonstone.log('Difference in time zones. Updating profile timezone.');
+
+            moonstone.json.profile.setTimeZone(userTz, function (response) {
+                user_profile_info.timeZone = userTz;
+
+                displaySuccess(null, response.message);
+                moonstone.log(sprintf('User TimeZone has been updated to %s', user_profile_info.timeZone));
+            });
+        }
+    }
+    else {
+        moonstone.log('TimeZone auto update is disabled.');
+    }
+}
+
 function bindFormSubmit(formSelector, apiAction, callbackSuccess, callbackFailure) {
     var apiSettings = {
         action: apiAction,
         method: 'POST',
         serializeForm: true,
-        //stateContext: formSelector
+        stateContext: formSelector
     };
 
     if (callbackSuccess !== null) {
@@ -94,16 +171,13 @@ function bindFormSubmit(formSelector, apiAction, callbackSuccess, callbackFailur
 
     $(formSelector + ' .submit.button').api(apiSettings);
 
-    // jquery validate
-    //$('input[data-val=true]').on('blur', function () {
-    //    $(this).valid();
-    //});
     $('.submit.button').on('click', function () {
         $(formSelector).valid();
     });
 }
 
 function handleApiFailure(response) {
+    moonstone.log(response);
     displayMessage('error', 'Error', response.message);
 }
 
@@ -113,6 +187,22 @@ function handleApiSuccess(response) {
     if (response.returnUrl !== null) {
         window.location = response.returnUrl;
     }
+}
+
+function displayError(title, message) {
+    displayMessage('error', title, message);
+}
+
+function displayWarning(title, message) {
+    displayMessage('warning', title, message);
+}
+
+function displaySuccess(title, message) {
+    displayMessage('success', title, message);
+}
+
+function displayInfo(title, message) {
+    displayMessage('info', title, message);
 }
 
 function displayMessage(type, title, message) {
@@ -160,6 +250,8 @@ function bindDropdown(selector, apiAction, callbackSuccess) {
 
                 $items.append($item);
             });
+
+            $element.dropdown();
         };
     }
 
@@ -167,5 +259,25 @@ function bindDropdown(selector, apiAction, callbackSuccess) {
         on: 'now',
         action: apiAction,
         onSuccess: callbackSuccess
-    }).dropdown();
+    });
+}
+
+function hideElement($element) {
+    $element.hide();
+}
+
+function showElement($element) {
+    $element.show();
+}
+
+function registerChangeListener($element, callback) {
+    moonstone.log('registering change listener for ' + $element.attr('id'));
+    $element.change(callback);
+}
+
+function loadUserProfile(successCallback) {
+    moonstone.json.profile.getProfileInformation(null, null, function (response) {
+        user_profile_info = response.data;
+        successCallback();
+    });
 }

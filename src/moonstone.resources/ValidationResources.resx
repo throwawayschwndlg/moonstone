@@ -129,6 +129,9 @@
   <data name="Category_GetAllForCurrentGroup_Error" xml:space="preserve">
     <value>Failed to retreive categories for current group.</value>
   </data>
+  <data name="Currency_GetExchangeRate_Error" xml:space="preserve">
+    <value>Failed to determine the exchange rate for {0} and {1}. Please enter the value manually.</value>
+  </data>
   <data name="Generic_Error" xml:space="preserve">
     <value>An error has occured. Please try again.</value>
   </data>
@@ -156,7 +159,13 @@
   <data name="User_Login_Success" xml:space="preserve">
     <value>Successfully logged in as {0}.</value>
   </data>
+  <data name="User_ProfileSettings_Success" xml:space="preserve">
+    <value>Your profile settings have been updated.</value>
+  </data>
   <data name="User_SelectGroup_NotInGroup" xml:space="preserve">
     <value>Not a valid group.</value>
+  </data>
+  <data name="User_SetTimeZone_Success" xml:space="preserve">
+    <value>Your timezone has been changed to "{0}"</value>
   </data>
 </root>

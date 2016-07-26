@@ -21,6 +21,9 @@
     "toastr": "^2.1.2",
     "jquery-validation-unobtrusive": "^3.2.6",
     "moment": "^2.14.1",
-    "flatpickr": "flatpickr-calendar#^1.8.9"
+    "sprintf": "^1.0.3",
+    "offline": "^0.7.17",
+    "moment-timezone": "^0.5.4",
+    "pikaday": "^1.4.0"
   }
 }

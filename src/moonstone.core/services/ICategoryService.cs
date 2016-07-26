@@ -13,6 +13,10 @@ namespace moonstone.core.services
 
         IEnumerable<Category> GetCategoriesForGroup(Guid groupId);
 
+        IEnumerable<Category> GetCategoriesForUser(Guid userId);
+
         Category GetCategoryById(Guid id);
+
+        Category GetDefaultCategoryForUser(Guid userId);
     }
 }

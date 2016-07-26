@@ -1,3 +1,12 @@
 ﻿@model DateTime?
 
-@Html.TextBoxFor(m => m, new { @class = "ms-date-selector" })
+@{
+    string defaultValue = string.Empty;
+    if (Model.HasValue)
+    {
+        defaultValue = Model.Value.ToString("yyyy-MM-dd");
+    }
+}
+
+<input type="hidden" id="@Html.IdFor(m => m)" value="@defaultValue" />
+<input class="ms-date-selector" value="@defaultValue" />

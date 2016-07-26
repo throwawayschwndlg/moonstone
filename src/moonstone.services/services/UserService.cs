@@ -75,6 +75,27 @@ namespace moonstone.services
             }
         }
 
+        public void SetTimeZone(Guid userId, string timeZoneId)
+        {
+            if (!TimeZoneUtils.GetAvailableTimeZones().Contains(timeZoneId, StringComparer.InvariantCultureIgnoreCase))
+            {
+                throw new ArgumentException($"TimeZone \"{timeZoneId}\" is not registered.");
+            }
+
+            var user = this.GetUserById(userId);
+            user.TzdbTimeZoneId = timeZoneId;
+            this.UpdateUser(user);
+        }
+
+        public void UpdateSettings(Guid userId, string timeZoneId, bool autoUpdateTimeZone)
+        {
+            var user = this.GetUserById(userId);
+            user.TzdbTimeZoneId = timeZoneId;
+            user.AutoUpdateTimeZone = autoUpdateTimeZone;
+
+            this.UpdateUser(user);
+        }
+
         protected void UpdateUser(User user)
         {
             this.Repositories.UserRepository.Update(user);

@@ -39,9 +39,19 @@ namespace moonstone.services
             return this.Repositories.CategoryRepository.GetCategoriesForGroup(groupId);
         }
 
+        public IEnumerable<Category> GetCategoriesForUser(Guid userId)
+        {
+            return this.Repositories.CategoryRepository.GetCategoriesForUser(userId);
+        }
+
         public Category GetCategoryById(Guid id)
         {
             return this.Repositories.CategoryRepository.GetById(id);
+        }
+
+        public Category GetDefaultCategoryForUser(Guid userId)
+        {
+            return this.GetCategoriesForUser(userId).FirstOrDefault();
         }
     }
 }
