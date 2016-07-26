@@ -10,5 +10,6 @@ var moonstone = {
 
 moonstone.log = function (message) {
     if (moonstone.isDebug) {
+        console.log(message);
     }
 };

@@ -1,4 +1,6 @@
-﻿$(function () {
+﻿var user_profile_info = {};
+
+$(function () {
     init();
 });
 
@@ -115,15 +117,20 @@ function initMoonstone() {
 
 function initPikaday() {
     $('.ms-date-selector').each(function () {
-        $picker = $(this);
+        // this is the picker
+        var $picker = $(this);
+        // this field holds the actual value
+        var $hidden = $(this).prev('input');
+        // set the default date of the picker
+        $picker.val(moment($hidden.val()).format(user_profile_info.dateFormat));
+        // initialize pikaday
         $picker.pikaday({
-            format: 'YYYY/MM/DD'
+            format: user_profile_info.dateFormat
         });
+        // register a change handler on picker
         $picker.change(function () {
             // first, we need to get the pikaday instance...
             var pika = $(this).data('pikaday');
-            // now, let's find the input element which will hold the value that will be sent to the server
-            var $hidden = $(this).prev('input');
             // format the selected date to our default format.
             $hidden.val(pika.getMoment().format('YYYY-MM-DD')).trigger('change');
         });
@@ -278,6 +285,9 @@ function registerChangeListener($element, callback) {
 function loadUserProfile(successCallback) {
     moonstone.json.profile.getProfileInformation(null, null, function (response) {
         user_profile_info = response.data;
+
+        moonstone.log(user_profile_info);
+
         successCallback();
     });
 }

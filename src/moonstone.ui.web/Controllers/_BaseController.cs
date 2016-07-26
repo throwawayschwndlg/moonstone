@@ -40,9 +40,12 @@ namespace moonstone.ui.web.Controllers
         protected ActionResult JsonResponse(bool success, dynamic data, string message, string returnUrl)
         {
             JsonNetResult result = new JsonNetResult();
-            //result.Formatting = Formatting.Indented; // for nice looking results
             result.Formatting = Formatting.None;
             result.Data = new { success = success, message = message, data = data, returnUrl = returnUrl };
+
+#if DEBUG
+            result.Formatting = Formatting.Indented; // for nice looking results
+#endif
 
             return result;
         }

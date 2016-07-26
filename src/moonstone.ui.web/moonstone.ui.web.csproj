@@ -217,7 +217,7 @@
     <Content Include="Views\Group\Index.cshtml" />
     <Content Include="Views\Group\Create.cshtml" />
     <Content Include="Views\Transaction\Index.cshtml" />
-    <Content Include="Views\Transaction\Create_.cshtml" />
+    <Content Include="Views\Transaction\delete_this_create.cshtml" />
     <Content Include="Views\Shared\EditorTemplates\CategorySelect.cshtml" />
     <Content Include="Views\Shared\EditorTemplates\BankAccountSelect.cshtml" />
     <Content Include="Views\Shared\EditorTemplates\Boolean.cshtml" />

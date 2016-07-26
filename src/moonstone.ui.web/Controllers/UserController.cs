@@ -27,9 +27,10 @@ namespace moonstone.ui.web.Controllers
                 var res = new
                 {
                     //email = currentUser.Email,
-                    culture = currentUser.Culture,
+                    //culture = currentUser.Culture,
                     timeZone = currentUser.TzdbTimeZoneId,
-                    autoUpdateTimeZone = currentUser.AutoUpdateTimeZone
+                    autoUpdateTimeZone = currentUser.AutoUpdateTimeZone,
+                    dateFormat = currentUser.DateFormat
                 };
 
                 return this.JsonSuccess(data: res, message: null);
