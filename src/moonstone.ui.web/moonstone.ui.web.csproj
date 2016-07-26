@@ -232,6 +232,7 @@
     <Content Include="Views\Shared\EditorTemplates\TextArea.cshtml" />
     <Content Include="Views\User\Settings.cshtml" />
     <Content Include="Views\Shared\EditorTemplates\TimeZoneSelect.cshtml" />
+    <Content Include="Views\Shared\EditorTemplates\DateFormatSelect.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

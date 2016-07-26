@@ -9,6 +9,15 @@ namespace moonstone.core.i18n
 {
     public class TimeZoneUtils
     {
+        public static IEnumerable<string> GetAvailableDateFormat()
+        {
+            return new List<string>()
+            {
+                "YYYY-MM-DD",
+                "DD.MM.YYYY"
+            };
+        }
+
         public static IEnumerable<string> GetAvailableTimeZones()
         {
             return DateTimeZoneProviders.Tzdb.Ids;

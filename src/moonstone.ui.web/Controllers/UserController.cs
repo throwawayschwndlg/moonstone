@@ -18,6 +18,15 @@ namespace moonstone.ui.web.Controllers
         }
 
         [HttpGet]
+        public ActionResult GetDateFormats()
+        {
+            var res = TimeZoneUtils.GetAvailableDateFormat()
+                .Select(df => new { name = df, value = df });
+
+            return JsonSuccess(data: res, message: null);
+        }
+
+        [HttpGet]
         public ActionResult GetProfileInformation()
         {
             try
@@ -190,7 +199,8 @@ namespace moonstone.ui.web.Controllers
             {
                 Email = currentUser.Email,
                 TimeZone = currentUser.TzdbTimeZoneId,
-                AutoUpdateTimeZone = currentUser.AutoUpdateTimeZone
+                AutoUpdateTimeZone = currentUser.AutoUpdateTimeZone,
+                DateFormat = currentUser.DateFormat
             };
 
             return View(model);
@@ -204,7 +214,11 @@ namespace moonstone.ui.web.Controllers
             {
                 try
                 {
-                    this.Current.Services.UserService.UpdateSettings(this.Current.UserId.Value, model.TimeZone, model.AutoUpdateTimeZone);
+                    this.Current.Services.UserService.UpdateSettings(
+                        this.Current.UserId.Value,
+                        model.TimeZone,
+                        model.AutoUpdateTimeZone,
+                        model.DateFormat);
                     return this.JsonSuccess(data: null, message: ValidationResources.User_ProfileSettings_Success);
                 }
                 catch (Exception e)

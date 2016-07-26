@@ -31,6 +31,7 @@ function initSemanticUi() {
         'api-get-categories-for-current-group': '/category/GetAllCategoriesForCurrentGroup',
         'api-get-bankaccounts-for-current-user': '/bankaccount/GetAllBankAccountsForCurrentUser',
         'api-get-timezones': '/user/getTimeZones',
+        'api-get-dateformats': '/user/getDateFormats',
         'api-get-currencies': '/currency/GetAllCurrencies',
         'api-update-profile-settings': '/user/settings',
     };

@@ -10,6 +10,10 @@ namespace moonstone.ui.web.Models.ViewModels.User
     {
         public bool AutoUpdateTimeZone { get; set; }
 
+        [Required]
+        [UIHint("DateFormatSelect")]
+        public string DateFormat { get; set; }
+
         [UIHint("TextBox")]
         [EmailAddress]
         public string Email { get; set; }

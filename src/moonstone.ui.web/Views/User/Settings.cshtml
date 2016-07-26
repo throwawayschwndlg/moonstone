@@ -17,7 +17,15 @@
     </div>
 
     <div class="field">
+        @Html.LabelFor(m => m.TimeZone)
         @Html.EditorFor(m => m.TimeZone)
+        @Html.MSValidationMessageFor(m => m.TimeZone)
+    </div>
+
+    <div class="field">
+        @Html.LabelFor(m => m.DateFormat)
+        @Html.EditorFor(m => m.DateFormat)
+        @Html.MSValidationMessageFor(m => m.DateFormat)
     </div>
 
     <button class="ui positive submit button">Update</button>

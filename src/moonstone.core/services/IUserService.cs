@@ -21,6 +21,6 @@ namespace moonstone.core.services
 
         void SetTimeZone(Guid userId, string timeZoneId);
 
-        void UpdateSettings(Guid userId, string timeZoneId, bool autoUpdateTimeZone);
+        void UpdateSettings(Guid userId, string timeZoneId, bool autoUpdateTimeZone, string dateFormat);
     }
 }

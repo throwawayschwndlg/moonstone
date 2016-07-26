@@ -87,11 +87,14 @@ namespace moonstone.services
             this.UpdateUser(user);
         }
 
-        public void UpdateSettings(Guid userId, string timeZoneId, bool autoUpdateTimeZone)
+        public void UpdateSettings(Guid userId, string timeZoneId, bool autoUpdateTimeZone, string dateFormat)
         {
+            // TODO: Check if timezone, dateformat, etc. are valid
+
             var user = this.GetUserById(userId);
             user.TzdbTimeZoneId = timeZoneId;
             user.AutoUpdateTimeZone = autoUpdateTimeZone;
+            user.DateFormat = dateFormat;
 
             this.UpdateUser(user);
         }
