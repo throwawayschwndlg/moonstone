@@ -44,6 +44,9 @@ function initSemanticUi() {
     $.fn.api.settings.onSuccess = handleApiSuccess;
     $.fn.api.settings.onFailure = handleApiFailure;
 
+    // dropdowns
+    // Attention: don't do a global dropdown() on all .ui.dropdown elements,
+    // they might be bound using bindDropdown() below
     // nav dropdowns
     $('.ms-nav-profile-dropdown').dropdown();
     $('.ms-nav-group-dropdown').dropdown();
@@ -247,9 +250,13 @@ function bindDropdown(selector, apiAction, callbackSuccess) {
     var $element = $(selector);
     var $items = $element.find('.menu');
 
-    if (callbackSuccess == null) {
-        callbackSuccess = function (response) {
-            $.each(response.data, function (index, v) {
+    $element.dropdown({ fullTextSearch: "exact" });
+
+    $element.api({
+        on: 'now',
+        action: apiAction,
+        onSuccess: function (response) {
+            $.each(response.data, function (i, v) {
                 var $item = $('<div class="item" data-value="' + v.value + '">' + v.name + '</div>');
                 if (v.description != null) {
                     var $description = $('<span class="description">' + v.description + '</span>');
@@ -259,14 +266,10 @@ function bindDropdown(selector, apiAction, callbackSuccess) {
                 $items.append($item);
             });
 
-            $element.dropdown();
-        };
-    }
-
-    $element.api({
-        on: 'now',
-        action: apiAction,
-        onSuccess: callbackSuccess
+            if (callbackSuccess != null) {
+                callbackSuccess();
+            };
+        }
     });
 }
 
@@ -279,8 +282,13 @@ function showElement($element) {
 }
 
 function registerChangeListener($element, callback) {
-    moonstone.log('registering change listener for ' + $element.attr('id'));
     $element.change(callback);
+    moonstone.log('registered change listener for ' + $element.attr('id'));
+}
+
+function registerDropdownChangeListener($hiddenInput, callback) {
+    $hiddenInput.closest('.dropdown').dropdown('setting', 'onChange', callback);
+    moonstone.log(sprintf('registered change listener (dropdown) for %s', $hiddenInput.attr('id')));
 }
 
 function loadUserProfile(successCallback) {

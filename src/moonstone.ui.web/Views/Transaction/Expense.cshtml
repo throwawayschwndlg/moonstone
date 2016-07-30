@@ -9,34 +9,47 @@
         @Html.MSValidationMessageFor(m => m.Title)
     </div>
 
-    <div class="field">
-        @Html.LabelFor(m => m.SourceBankAccountId)
-        @Html.EditorFor(m => m.SourceBankAccountId)
-        @Html.MSValidationMessageFor(m => m.SourceBankAccountId)
+    <div class="two fields">
+        <div class="field">
+            @Html.LabelFor(m => m.Amount)
+            @Html.EditorFor(m => m.Amount)
+            @Html.MSValidationMessageFor(m => m.Amount)
+        </div>
+
+        <div class="field">
+            @Html.LabelFor(m => m.Currency)
+            @Html.EditorFor(m => m.Currency)
+            @Html.MSValidationMessageFor(m => m.Currency)
+        </div>
     </div>
 
-    <div class="field">
-        @Html.LabelFor(m => m.Amount)
-        @Html.EditorFor(m => m.Amount)
-        @Html.MSValidationMessageFor(m => m.Amount)
+    <div class="two fields">
+        <div class="field">
+            @Html.LabelFor(m => m.SourceBankAccountId)
+            @Html.EditorFor(m => m.SourceBankAccountId)
+            @Html.MSValidationMessageFor(m => m.SourceBankAccountId)
+        </div>
+
+        <div class="field ms-field-exchangeRate">
+            @Html.LabelFor(m => m.ExchangeRate)
+            @Html.EditorFor(m => m.ExchangeRate)
+            @Html.MSValidationMessageFor(m => m.ExchangeRate)
+        </div>
     </div>
 
-    <div class="field ms-field-exchangeRate">
-        @Html.LabelFor(m => m.ExchangeRate)
-        @Html.EditorFor(m => m.ExchangeRate)
-        @Html.MSValidationMessageFor(m => m.ExchangeRate)
-    </div>
+    <div class="two fields">
 
-    <div class="field">
-        @Html.LabelFor(m => m.Currency)
-        @Html.EditorFor(m => m.Currency)
-        @Html.MSValidationMessageFor(m => m.Currency)
-    </div>
+        <div class="field">
+            @Html.LabelFor(m => m.ValueDate)
+            @Html.EditorFor(m => m.ValueDate)
+            @Html.MSValidationMessageFor(m => m.ValueDate)
+        </div>
 
-    <div class="field">
-        @Html.LabelFor(m => m.CategoryId)
-        @Html.EditorFor(m => m.CategoryId)
-        @Html.MSValidationMessageFor(m => m.CategoryId)
+        <div class="field">
+            @Html.LabelFor(m => m.CategoryId)
+            @Html.EditorFor(m => m.CategoryId)
+            @Html.MSValidationMessageFor(m => m.CategoryId)
+        </div>
     </div>
 
     <div class="field">
@@ -45,50 +58,43 @@
         @Html.MSValidationMessageFor(m => m.Description)
     </div>
 
-    <div class="field">
-        @Html.LabelFor(m => m.ValueDate)
-        @Html.EditorFor(m => m.ValueDate)
-        @Html.MSValidationMessageFor(m => m.ValueDate)
-    </div>
-
     <button class="ui positive submit button">Create expense</button>
 }
 
 <script type="text/javascript">
+
     $(document).ready(function () {
         var apiAction = 'api-create-expense';
         var formSelector = '.ms-create-expense-form';
+        var $exchangeRateField = $('.ms-field-exchangeRate');
+        var $exchangeRateElement = $('#@Html.IdFor(m => m.ExchangeRate)');
+        var errorClass = "error";
 
         bindFormSubmit(formSelector, apiAction);
 
-        registerChangeListener($('#@Html.IdFor(m => m.SourceBankAccountId).ToString()'), triggerExchangeRateChange);
-        registerChangeListener($('#@Html.IdFor(m => m.Currency).ToString()'), triggerExchangeRateChange);
+        registerDropdownChangeListener($('#@Html.IdFor(m => m.Currency).ToString()'), triggerExchangeRateChange);
         registerChangeListener($('#@Html.IdFor(m => m.ValueDate).ToString()'), triggerExchangeRateChange);
-    });
+        registerDropdownChangeListener($('#@Html.IdFor(m => m.SourceBankAccountId).ToString()'), triggerExchangeRateChange);
 
-    function triggerExchangeRateChange() {
-        var sourceAccountId = $('#@Html.IdFor(m => m.SourceBankAccountId)').dropdown('get value');
-        var currency = $('#@Html.IdFor(m => m.Currency)').dropdown('get value');
-        var date = $('#@Html.IdFor(m => m.ValueDate)').val();
-        var $exchangeRateField = $('.ms-field-exchangeRate');
-        var $exchangeRateElement = $('#@Html.IdFor(m => m.ExchangeRate)');
-        var fieldErrorClasses = "field error";
 
-        moonstone.json.currencies.getExchangeRateForExpense(sourceAccountId, currency, date, function (result) {
-            $exchangeRateElement.val(result.data.Rate);
-            if (result.data.Base !== result.data.Target) {
-                showElement($exchangeRateField);
-            }
-            else {
-                hideElement($exchangeRateField);
-            }
-
-            $exchangeRateField.removeClass(fieldErrorClasses);
-        },
-        function (result) {
-            displayError(null, result.message);
-            showElement($exchangeRateField);
-            $exchangeRateField.addClass(fieldErrorClasses);
+        $('#@Html.IdFor(m => m.ExchangeRate)').blur(function () {
+            $exchangeRateField.removeClass(errorClass);
         });
-    }
+
+        function triggerExchangeRateChange() {
+            var sourceAccountId = $('#@Html.IdFor(m => m.SourceBankAccountId)').dropdown('get value');
+            var currency = $('#@Html.IdFor(m => m.Currency)').dropdown('get value');
+            var date = $('#@Html.IdFor(m => m.ValueDate)').val();
+
+            $exchangeRateField.removeClass(errorClass);
+
+            moonstone.json.currencies.getExchangeRateForExpense(sourceAccountId, currency, date, function (result) {
+                $exchangeRateElement.val(result.data.Rate);
+            },
+            function (result) {
+                $exchangeRateField.addClass(errorClass);
+                displayError(null, result.message);
+            });
+        }
+    });
 </script>
