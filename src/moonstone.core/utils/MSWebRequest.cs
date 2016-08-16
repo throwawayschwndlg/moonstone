@@ -12,7 +12,7 @@ namespace moonstone.core.utils
 {
     public class MSWebRequest
     {
-        protected const int REQUEST_TIMEOUT = 5000;
+        protected const int REQUEST_TIMEOUT = 1000;
 
         public static dynamic RequestJson(string url)
         {

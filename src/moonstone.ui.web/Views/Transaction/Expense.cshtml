@@ -82,6 +82,7 @@
         });
 
         function triggerExchangeRateChange() {
+            console.warn('derp derp exchange rate');
             var sourceAccountId = $('#@Html.IdFor(m => m.SourceBankAccountId)').dropdown('get value');
             var currency = $('#@Html.IdFor(m => m.Currency)').dropdown('get value');
             var date = $('#@Html.IdFor(m => m.ValueDate)').val();

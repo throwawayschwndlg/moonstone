@@ -13,8 +13,6 @@ moonstone.json.currencies.getExchangeRateForExpense =
     function (sourceBankAccoundId, targetCurrency, conversionDate, successCallback, errorCallback, alwaysCallback) {
         var url = sprintf(moonstone.json.urls.getExchangeRateForExpense, sourceBankAccoundId, targetCurrency, conversionDate);
 
-        moonstone.log(url);
-
         moonstone.json.get(
             url,
             successCallback,

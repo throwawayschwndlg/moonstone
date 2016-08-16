@@ -913,5 +913,13 @@ namespace moonstone.sql.context
 
             return command;
         }
+
+        public static void CheckWhereClause(string whereClause)
+        {
+            if (!whereClause.Contains($"@"))
+            {
+                throw new ArgumentException($"Where clause must be parameterized", nameof(whereClause));
+            }
+        }
     }
 }

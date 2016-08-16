@@ -8,7 +8,7 @@ function init() {
     // profile agnostic inits
     initSemanticUi();
     initToastr();
-    initOffline();
+    //initOffline();
     initMoonstone();
 
     // profile based inits / settings
@@ -56,7 +56,7 @@ function initSemanticUi() {
         onChecked: function () { $(this).val(true); },
         onUnchecked: function () { $(this).val(false); }
     });
-    // checkboxes - this is some true shit. fix this ASAP
+    // checkboxes - this is some true bullshit. fix this ASAP
     $.each($('.ui.checkbox').find('input'), function () {
         if ($(this).val() == "True") {
             $(this).parent().checkbox('check');
@@ -188,7 +188,6 @@ function bindFormSubmit(formSelector, apiAction, callbackSuccess, callbackFailur
 }
 
 function handleApiFailure(response) {
-    moonstone.log(response);
     displayMessage('error', 'Error', response.message);
 }
 
@@ -249,7 +248,7 @@ function initModal(modalSelector, triggerSelector) {
 function bindDropdown(selector, apiAction, callbackSuccess) {
     var $element = $(selector);
     var $items = $element.find('.menu');
-
+    
     $element.dropdown({ fullTextSearch: "exact" });
 
     $element.api({
@@ -265,6 +264,9 @@ function bindDropdown(selector, apiAction, callbackSuccess) {
 
                 $items.append($item);
             });
+
+            $element.dropdown('refresh').dropdown('restore defaults');
+            console.log('refreshed and restored defaults');
 
             if (callbackSuccess != null) {
                 callbackSuccess();
@@ -283,19 +285,15 @@ function showElement($element) {
 
 function registerChangeListener($element, callback) {
     $element.change(callback);
-    moonstone.log('registered change listener for ' + $element.attr('id'));
 }
 
 function registerDropdownChangeListener($hiddenInput, callback) {
     $hiddenInput.closest('.dropdown').dropdown('setting', 'onChange', callback);
-    moonstone.log(sprintf('registered change listener (dropdown) for %s', $hiddenInput.attr('id')));
 }
 
 function loadUserProfile(successCallback) {
     moonstone.json.profile.getProfileInformation(null, null, function (response) {
         user_profile_info = response.data;
-
-        moonstone.log(user_profile_info);
 
         successCallback();
     });

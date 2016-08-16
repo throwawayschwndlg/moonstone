@@ -41,7 +41,6 @@ moonstone.json.post = function (url, data, successCallback, errorCallback, alway
     data.__RequestVerificationToken = moonstone.json.antiForgeryToken;
 
     moonstone.log(sprintf('Posting JSON to %s', url));
-    moonstone.log(data);
 
     $.post(url, data)
         .done(function (result) {

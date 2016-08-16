@@ -49,7 +49,8 @@ namespace moonstone.tests.common
             {
                 CreateUserId = createUserId,
                 Description = $"Description_{Guid.NewGuid()}",
-                Name = $"BankAccount_{Guid.NewGuid()}"
+                Name = $"BankAccount_{Guid.NewGuid()}",
+                Currency = "CHF"
             };
         }
 
@@ -84,7 +85,8 @@ namespace moonstone.tests.common
                 PasswordHash = "h4$h",
                 Culture = NEW_USER_DEFAULT_LANGUAGE,
                 CreateDateUtc = DateTime.UtcNow,
-                CurrentGroupId = currentGroupId
+                CurrentGroupId = currentGroupId,
+                DateFormat = "yyyy-MM-dd"
             };
 
             return user;
