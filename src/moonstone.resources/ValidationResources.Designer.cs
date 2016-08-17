@@ -97,6 +97,15 @@ namespace moonstone.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Failed to determine the exchange rate for {0} and {1}. Please enter the value manually..
+        /// </summary>
+        public static string Currency_GetExchangeRate_Error {
+            get {
+                return ResourceManager.GetString("Currency_GetExchangeRate_Error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to An error has occured. Please try again..
         /// </summary>
         public static string Generic_Error {
@@ -178,11 +187,29 @@ namespace moonstone.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Your profile settings have been updated..
+        /// </summary>
+        public static string User_ProfileSettings_Success {
+            get {
+                return ResourceManager.GetString("User_ProfileSettings_Success", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Not a valid group..
         /// </summary>
         public static string User_SelectGroup_NotInGroup {
             get {
                 return ResourceManager.GetString("User_SelectGroup_NotInGroup", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Your timezone has been changed to &quot;{0}&quot;.
+        /// </summary>
+        public static string User_SetTimeZone_Success {
+            get {
+                return ResourceManager.GetString("User_SetTimeZone_Success", resourceCulture);
             }
         }
     }

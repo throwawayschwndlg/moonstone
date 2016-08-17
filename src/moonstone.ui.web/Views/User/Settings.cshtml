@@ -1,0 +1,44 @@
+﻿@model moonstone.ui.web.Models.ViewModels.User.SettingsViewModel
+
+<h2>Profile Settings</h2>
+
+@using (Html.BeginForm(Routes.ProfileSettings.Action, Routes.ProfileSettings.Controller, FormMethod.Post, new { @class = "ui form ms-profile-settings-form" }))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="field">
+        @Html.LabelFor(m => m.Email)
+        @Html.DisplayFor(m => m.Email)
+        @Html.MSValidationMessageFor(m => m.Email)
+    </div>
+
+    <div class="field">
+        @Html.EditorFor(m => m.AutoUpdateTimeZone)
+    </div>
+
+    <div class="field">
+        @Html.LabelFor(m => m.TimeZone)
+        @Html.EditorFor(m => m.TimeZone)
+        @Html.MSValidationMessageFor(m => m.TimeZone)
+    </div>
+
+    <div class="field">
+        @Html.LabelFor(m => m.DateFormat)
+        @Html.EditorFor(m => m.DateFormat)
+        @Html.MSValidationMessageFor(m => m.DateFormat)
+    </div>
+
+    <button class="ui positive submit button">Update</button>
+}
+
+@Scripts.Render("~/bundles/jqueryval")
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        var apiAction = 'api-update-profile-settings';
+        var formSelector = '.ms-profile-settings-form';
+
+        // bind the form so it supports ajax
+        bindFormSubmit(formSelector, apiAction);
+    });
+</script>

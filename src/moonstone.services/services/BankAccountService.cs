@@ -20,18 +20,10 @@ namespace moonstone.services
             this.GroupService = groupService;
         }
 
-        public BankAccount CreateBankAccount(BankAccount bankAccount)
+        public BankAccount CreateBankAccount(BankAccount bankAccount, decimal startingBalance)
         {
-            if (this.GroupService.IsUserInGroup(bankAccount.CreateUserId, bankAccount.GroupId))
-            {
-                return this.GetBankAccountById(
+            return this.GetBankAccountById(
                 this.Repositories.BankAccountRepository.Create(bankAccount));
-            }
-            else
-            {
-                throw new UserNotInGroupException(
-                    $"Bank account will not be created, since user {bankAccount.CreateUserId} is not in group {bankAccount.GroupId}");
-            }
         }
 
         public BankAccount GetBankAccountById(Guid id)
@@ -39,9 +31,14 @@ namespace moonstone.services
             return this.Repositories.BankAccountRepository.GetById(id);
         }
 
-        public IEnumerable<BankAccount> GetBankAccountsForGroup(Guid groupId)
+        public IEnumerable<BankAccount> GetBankAccountsForUser(Guid userId)
         {
-            return this.Repositories.BankAccountRepository.GetBankAccountsForGroup(groupId);
+            return this.Repositories.BankAccountRepository.GetForUser(userId);
+        }
+
+        public BankAccount GetDefaultAccountForuser(Guid userId)
+        {
+            return this.GetBankAccountsForUser(userId).First();
         }
     }
 }

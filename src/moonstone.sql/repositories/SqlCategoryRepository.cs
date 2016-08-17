@@ -64,5 +64,21 @@ namespace moonstone.sql.repositories
                     $"Failed to get categories for group with id {groupId}.", e);
             }
         }
+
+        public IEnumerable<Category> GetCategoriesForUser(Guid userId)
+        {
+            try
+            {
+                return this.Context.RunCommand<Category>(
+                    command: this.Context.SelectCommand<Category>("createUserId = @CreateUserId"),
+                    param: new { CreateUserId = userId },
+                    mode: CommandMode.Read);
+            }
+            catch (Exception e)
+            {
+                throw new QueryCategoriesException(
+                    $"Failed to get categories for user with id {userId}.", e);
+            }
+        }
     }
 }

@@ -43,14 +43,14 @@ namespace moonstone.tests.common
                 userRepo.Create(TestProvider.GetNewUser()));
         }
 
-        public static BankAccount GetNewBankAccount(Guid createUserId, Guid groupId)
+        public static BankAccount GetNewBankAccount(Guid createUserId)
         {
             return new BankAccount
             {
                 CreateUserId = createUserId,
                 Description = $"Description_{Guid.NewGuid()}",
-                GroupId = groupId,
-                Name = $"BankAccount_{Guid.NewGuid()}"
+                Name = $"BankAccount_{Guid.NewGuid()}",
+                Currency = "CHF"
             };
         }
 
@@ -85,7 +85,8 @@ namespace moonstone.tests.common
                 PasswordHash = "h4$h",
                 Culture = NEW_USER_DEFAULT_LANGUAGE,
                 CreateDateUtc = DateTime.UtcNow,
-                CurrentGroupId = currentGroupId
+                CurrentGroupId = currentGroupId,
+                DateFormat = "yyyy-MM-dd"
             };
 
             return user;

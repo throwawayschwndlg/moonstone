@@ -18,5 +18,9 @@ namespace moonstone.core.services
         void SetCulture(Guid userId, string culture);
 
         void SetCurrentGroup(Guid userId, Guid groupId);
+
+        void SetTimeZone(Guid userId, string timeZoneId);
+
+        void UpdateSettings(Guid userId, string timeZoneId, bool autoUpdateTimeZone, string dateFormat);
     }
 }

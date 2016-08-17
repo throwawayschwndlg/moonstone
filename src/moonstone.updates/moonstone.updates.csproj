@@ -44,6 +44,18 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
+    <Content Include="sql\0.0.017.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="sql\0.0.016.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="sql\0.0.015.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="sql\0.0.014.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="sql\0.0.013.sql">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

@@ -1,7 +1,7 @@
 ﻿@model moonstone.ui.web.Models.ViewModels.Group.CreateGroupViewModel
 
 @using (Html.BeginForm(Routes.CreateGroup.Action, Routes.CreateGroup.Controller, FormMethod.Post, new { @class = "ui form ms-create-group-form" }))
-            {
+{
     @Html.AntiForgeryToken()
 
     <div class="required field">

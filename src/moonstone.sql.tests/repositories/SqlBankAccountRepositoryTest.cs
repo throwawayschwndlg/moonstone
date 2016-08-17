@@ -36,7 +36,7 @@ namespace moonstone.sql.tests.repositories
             var creator = TestProvider.CreateNewUser(this.Repositories.UserRepository);
             var group = TestProvider.CreateNewGroup(this.Repositories.GroupRepository, creator.Id);
 
-            var bankAccount = TestProvider.GetNewBankAccount(creator.Id, group.Id);
+            var bankAccount = TestProvider.GetNewBankAccount(creator.Id);
             bankAccount.Id = this.BankAccountRepository.Create(bankAccount);
 
             var res = this.BankAccountRepository.GetById(bankAccount.Id);
@@ -51,7 +51,7 @@ namespace moonstone.sql.tests.repositories
             var creator = TestProvider.CreateNewUser(this.Repositories.UserRepository);
             var group = TestProvider.CreateNewGroup(this.Repositories.GroupRepository, creator.Id);
 
-            var bankAccount = TestProvider.GetNewBankAccount(creator.Id, group.Id);
+            var bankAccount = TestProvider.GetNewBankAccount(creator.Id);
             bankAccount.Id = this.BankAccountRepository.Create(bankAccount);
 
             var res = this.BankAccountRepository.GetById(bankAccount.Id);

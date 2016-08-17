@@ -23,6 +23,46 @@ namespace moonstone.core.exceptions.serviceExceptions
     }
 
     [Serializable]
+    public class CreateExpenseException : Exception
+    {
+        public CreateExpenseException()
+        {
+        }
+
+        public CreateExpenseException(string message) : base(message)
+        {
+        }
+
+        public CreateExpenseException(string message, Exception inner) : base(message, inner)
+        {
+        }
+
+        protected CreateExpenseException(
+          System.Runtime.Serialization.SerializationInfo info,
+          System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
+    }
+
+    [Serializable]
+    public class CreateTransactionException : Exception
+    {
+        public CreateTransactionException()
+        {
+        }
+
+        public CreateTransactionException(string message) : base(message)
+        {
+        }
+
+        public CreateTransactionException(string message, Exception inner) : base(message, inner)
+        {
+        }
+
+        protected CreateTransactionException(
+          System.Runtime.Serialization.SerializationInfo info,
+          System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
+    }
+
+    [Serializable]
     public class LoginException : Exception
     {
         public LoginException()
@@ -38,6 +78,26 @@ namespace moonstone.core.exceptions.serviceExceptions
         }
 
         protected LoginException(
+          System.Runtime.Serialization.SerializationInfo info,
+          System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
+    }
+
+    [Serializable]
+    public class RequestExchangeRateException : Exception
+    {
+        public RequestExchangeRateException()
+        {
+        }
+
+        public RequestExchangeRateException(string message) : base(message)
+        {
+        }
+
+        public RequestExchangeRateException(string message, Exception inner) : base(message, inner)
+        {
+        }
+
+        protected RequestExchangeRateException(
           System.Runtime.Serialization.SerializationInfo info,
           System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
     }

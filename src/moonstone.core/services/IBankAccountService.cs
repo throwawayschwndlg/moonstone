@@ -9,10 +9,12 @@ namespace moonstone.core.services
 {
     public interface IBankAccountService
     {
-        BankAccount CreateBankAccount(BankAccount bankAccount);
+        BankAccount CreateBankAccount(BankAccount bankAccount, decimal startingBalance);
 
         BankAccount GetBankAccountById(Guid id);
 
-        IEnumerable<BankAccount> GetBankAccountsForGroup(Guid groupId);
+        IEnumerable<BankAccount> GetBankAccountsForUser(Guid userId);
+
+        BankAccount GetDefaultAccountForuser(Guid userId);
     }
 }
