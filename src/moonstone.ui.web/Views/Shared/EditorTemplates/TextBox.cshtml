@@ -1,0 +1,8 @@
+﻿@model string
+@using System.Dynamic
+
+@{
+    var htmlAttributes = HtmlHelper.AnonymousObjectToHtmlAttributes(ViewData["htmlAttributes"]);
+}
+
+@Html.TextBoxFor(m => m, htmlAttributes)

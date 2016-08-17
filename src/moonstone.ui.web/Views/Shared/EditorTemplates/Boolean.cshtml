@@ -1,0 +1,7 @@
+﻿@model bool
+
+<div class="ui checkbox toggle">
+    <input type="checkbox" name="@Html.NameFor(m => m).ToString()" id="@Html.IdFor(m => m).ToString()" value="@Model.ToString()" />
+
+    @Html.LabelFor(m => m)
+</div>

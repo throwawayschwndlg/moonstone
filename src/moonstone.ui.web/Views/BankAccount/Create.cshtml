@@ -1,0 +1,56 @@
+﻿@model moonstone.ui.web.Models.ViewModels.BankAccount.CreateBankAccountViewModel
+
+@using (Html.BeginForm(Routes.CreateBankAccount.Action, Routes.CreateBankAccount.Controller, FormMethod.Post, new { @class = "ui form ms-create-bankaccount-form" }))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="field">
+        @Html.LabelFor(m => m.Name)
+
+        <div class="ui left corner labeled input">
+            @Html.TextBoxFor(m => m.Name, new { autofocus = "autofocus" })
+            <div class="ui left corner label">
+                <i class="asterisk icon"></i>
+            </div>
+        </div>
+
+        @Html.MSValidationMessageFor(m => m.Name)
+    </div>
+
+    <div class="field">
+        @Html.LabelFor(m => m.Description)
+        @Html.TextAreaFor(m => m.Description, new { rows = 3 })
+        @Html.MSValidationMessageFor(m => m.Description)
+    </div>
+
+    <div class="field">
+        @Html.LabelFor(m => m.Currency)
+        @Html.EditorFor(m => m.Currency)
+        @Html.ValidationMessageFor(m => m.Currency)
+    </div>
+
+    <div class="field">
+        @Html.LabelFor(m => m.StartingBalance)
+
+        <div class="ui left corner labeled input">
+            @Html.EditorFor(m => m.StartingBalance)
+            <div class="ui left corner label">
+                <i class="asterisk icon"></i>
+            </div>
+        </div>
+
+        @Html.MSValidationMessageFor(m => m.StartingBalance)
+    </div>
+
+    <button class="ui positive submit button">@UIResources.BankAccount_Create_Button_Create</button>
+}
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        var apiAction = 'api-create-bankaccount';
+        var formSelector = '.ms-create-bankaccount-form';
+
+        // bind the form so it supports ajax
+        bindFormSubmit(formSelector, apiAction);
+    });
+</script>
