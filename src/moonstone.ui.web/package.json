@@ -9,9 +9,9 @@
   "author": "david szöke",
   "license": "ISC",
   "dependencies": {
-    "autoprefixer": "^6.3.7",
+    "autoprefixer": "^9.0.0",
     "chart.js": "^2.2.0-rc.1",
-    "gulp-postcss": "^6.1.1",
+    "gulp-postcss": "^8.0.0",
     "gulp-sourcemaps": "^1.6.0",
     "semantic-ui": "^2.1.8"
   }
